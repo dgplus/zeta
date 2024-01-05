@@ -9,16 +9,12 @@
         
 <table class="display compact"></table>
 
-    <script>
-
-        
-        
+    <script>        
 (function() {
   "use strict";
   var csvColumns = [
       {title: "Bill Name", data: "bill_name"}, 
       {title: "congress.gov_link", data: "congress.gov_link"}, 
-
       {title: "status", data: "status"},
       {title: "bill_number", data: "bill_number"}, 
       {title: "chamber", data: "chamber"},
@@ -33,7 +29,7 @@
   $(document).ready(function() {
     $.ajax({
       type: "GET",
-      url: "/Users/davidganske/Documents/GitHub/zeta/member-legislation-tracker-2024-01-05.csv",
+      url: "https://raw.githubusercontent.com/dgplus/zeta/main/zeta-legislation-tracker.csv",
       dataType: "text",
       success: function(data) {
         dataTable.rows.add($.csv.toObjects(data)).draw();
