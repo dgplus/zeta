@@ -55,7 +55,7 @@
   $(document).ready(function() {
     $.ajax({
       type: "GET",
-      url: "https://raw.githubusercontent.com/dgplus/zeta/main/zeta-legislation-tracker.csv",
+      url: "https://raw.githubusercontent.com/dgplus/zeta/main/legislation-tracker.csv",
       dataType: "text",
       success: function(data) {
         dataTable.rows.add($.csv.toObjects(data)).draw();
