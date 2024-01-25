@@ -54,11 +54,49 @@
             $("table").DataTable({
               order: [],
               data: tableData,
-              columns: columns
+              columns: columns,
+              initComplete: function () {
+                this.api()
+                  .columns()
+                  .every(function () {
+                    // Make ctrl+a works 
+                    $('.sorting').keydown(function(e){
+                      if (e.keyCode == 65 && e.ctrlKey) {
+                        e.target.select()
+                      }
+                    })
+                    
+                    let column = this;
+                    let title = column.header().textContent;
+
+                    // Create br, input elements
+                    let hr = document.createElement('br');
+                    let input = document.createElement('input');
+                    input.placeholder = title;
+                    
+                    // Stop parent sort event in search column
+                    input.onclick = function(e) {
+                      e.stopPropagation();
+                    }
+                    
+                    // Append hr, input elements to header column
+                    column.header().appendChild(hr);
+                    column.header().appendChild(input);
+
+                    // Event listener for user input
+                    input.addEventListener('keyup', () => {
+                      if (column.search() !== this.value) {
+                        column.search(input.value).draw();
+                      }
+                    });
+                  });
+              }
             })
           }
         });
+
       });
+
     })();
   </script>
 
