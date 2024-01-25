@@ -20,6 +20,10 @@
       font-family: Roboto, sans-serif;
       font-size: 12px;
     }
+    
+    table tbody {
+      word-break: break-all;
+    }
   </style>
 
   <h1 style="font-family: Roboto, sans-serif;">ZETA Legislation Tracker</h1>
@@ -49,18 +53,24 @@
               order: [],
               data: tableData,
               columns: columns,
-              columnDefs: [{
-                targets: 0,
-                "render": function ( data, type, full, meta ) {
-                  return '<a href="' + full[1] + '" target="_blank">' + data + '</a>';
+              columnDefs: [
+                {
+                  targets: 0,
+                  "render": function ( data, type, full, meta ) {
+                    return '<a href="' + full[1] + '" target="_blank">' + data + '</a>';
+                  }
                 }
-              }],
-              createdRow: function( row, data, dataIndex ) {
+              ],
+              createdRow: function( row, data, dataIndex, cells ) {
                 if (data[2] == "Endorsed") {
-                  $(row).css({"background-color":"green"})
+                  $(row).css({"background-color" : "green"})
                 } else if (data[2] == "Of Interest") {
-                  $(row).css({"background-color":"red"})
+                  $(row).css({"background-color" : "red"})
                 }
+
+                cells.forEach(cell => {
+                  $(cell).css({"width" : "213px"})
+                });
               },
               initComplete: function () {
                 this.api()
