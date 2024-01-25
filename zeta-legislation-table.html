@@ -49,6 +49,12 @@
               order: [],
               data: tableData,
               columns: columns,
+              columnDefs: [{
+                targets: 0,
+                "render": function ( data, type, full, meta ) {
+                  return '<a href="' + full[1] + '" target="_blank">' + data + '</a>';
+                }
+              }],
               createdRow: function( row, data, dataIndex ) {
                 if (data[2] == "Endorsed") {
                   $(row).css({"background-color":"green"})
