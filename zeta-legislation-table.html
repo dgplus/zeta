@@ -49,6 +49,13 @@
               order: [],
               data: tableData,
               columns: columns,
+              createdRow: function( row, data, dataIndex ) {
+                if (data[2] == "Endorsed") {
+                  $(row).css({"background-color":"green"})
+                } else if (data[2] == "Of Interest") {
+                  $(row).css({"background-color":"red"})
+                }
+              },
               initComplete: function () {
                 this.api()
                   .columns()
