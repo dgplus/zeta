@@ -63,9 +63,12 @@
               ],
               createdRow: function( row, data, dataIndex, cells ) {
                 if (data[2] == "Endorsed") {
-                  $(row).css({"background-color" : "green"})
+                  $(row).css({"background-color" : "#b2d8b2"})
                 } else if (data[2] == "Of Interest") {
-                  $(row).css({"background-color" : "red"})
+                  $(row).css({"background-color" : "#ffcccc"})
+                }
+                  else if (data[2] == "Of Concern") {
+                  $(row).css({"background-color" : "#ffffcc"})
                 }
 
                 cells.forEach(cell => {
