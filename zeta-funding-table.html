@@ -26,10 +26,6 @@
       font-family: Roboto, sans-serif;
       font-size: 12px;
     }
-    
-    table tbody {
-      word-break: break-all;
-    }
   </style>
 
   <h1 style="font-family: Roboto, sans-serif;">ZETA Funding Opportunities</h1>
@@ -46,61 +42,78 @@
           type: "GET",
           url: "https://sheets.googleapis.com/v4/spreadsheets/1mdHB3Q9vMhyveeDTbS9EqLYweAQEsSuAp7kLCb_ItlM/values/funding-opportunities?alt=json&key=AIzaSyDsgn_PB4cvwhO0ldCsBBsr-E8xYEpi77Y",
           success: function(data) {
-            var columnNames = data.values[0];
-            for (var i in columnNames) {
-              columns.push({
-                title: columnNames[i]
-              });
-            }
+            columns = [
+              {
+                title: "Status"
+              },
+              {
+                title: "Amount Available"
+              },
+              {
+                title: "Title"
+              },
+              {
+                title: "Description"
+              },
+              {
+                title: "Link to Apply"
+              },
+              {
+                title: "Funding Mechanism"
+              },
+              {
+                title: "Eligible Applicants"
+              },
+              {
+                title: "Primary EV Supply Chain Segment"
+              },
+              {
+                title: "Secondary EV Supply Chain Segment"
+              },
+              {
+                title: "Informational Webinarr"
+              },
+              {
+                title: "Preliminary Response"
+              },
+              {
+                title: "Response Due"
+              }
+            ]
 
             var tableData = data.values.slice();
             tableData.shift();
+            tableData = tableData.map( item => [item[0], item[3], item[5], item[6], item[4], item[7], item[9], item[10], item[11], item[12], item[14], item[15]])
+
             $("table").DataTable({
-              order: [],
+              order: [[0, 'desc'], [11, 'asc']],
               data: tableData,
               columns: columns,
-              columnDefs: [{
-                targets: 5,
-                "render": function ( data, type, full, meta ) {
-                  return '<a href="' + full[4] + '" target="_blank">' + data + '</a>';
+              columnDefs: [
+                {
+                  targets: 2,
+                  "render": function ( data, type, full, meta ) {
+                    return '<a href="' + full[4] + '" target="_blank">' + data + '</a>';
+                  },
+                },
+                {
+                  targets: 4,
+                  visible: false,
+                },
+                {
+                  targets: 9,
+                  "render": function ( data, type, full, meta ) {
+                    return '<a href="' + full[9] + '" target="_blank">' + data + '</a>';
+                  },
+                },
+                {
+                  targets: 11,
+                  type: "date"
                 }
-              }],
-              initComplete: function () {
-                this.api()
-                  .columns()
-                  .every(function () {
-                    // Make ctrl+a works 
-                    $('.sorting').keydown(function(e){
-                      if (e.keyCode == 65 && e.ctrlKey) {
-                        e.target.select()
-                      }
-                    })
-                    
-                    let column = this;
-                    let title = column.header().textContent;
-
-                    // Create br, input elements
-                    let hr = document.createElement('br');
-                    let input = document.createElement('input');
-                    input.placeholder = title;
-                    
-                    // Stop parent sort event in search column
-                    input.onclick = function(e) {
-                      e.stopPropagation();
-                    }
-                    
-                    // Append hr, input elements to header column
-                    column.header().appendChild(hr);
-                    column.header().appendChild(input);
-
-                    // Event listener for user input
-                    input.addEventListener('keyup', () => {
-                      if (column.search() !== this.value) {
-                        column.search(input.value).draw();
-                      }
-                    });
-                  });
-              }
+              ],
+              createdRow: function( row, data, dataIndex, cells ) {
+                $(cells[9]).css({"word-break" : "break-all"})
+              },
             })
           }
         });
