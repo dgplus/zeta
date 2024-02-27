@@ -1,120 +1,120 @@
 <html>
 
-<link href="https://cdn.datatables.net/v/dt/dt-1.13.7/datatables.min.css" rel="stylesheet">
+  <link href="https://cdn.datatables.net/v/dt/dt-1.13.7/datatables.min.css" rel="stylesheet">
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-csv/0.8.9/jquery.csv.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-csv/0.8.9/jquery.csv.min.js"></script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.19/js/jquery.dataTables.min.js" defer></script>
-<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js" type="text/javascript"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.19/js/jquery.dataTables.min.js" defer></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js" type="text/javascript"></script>
 
-<script
-    type="text/javascript">WebFont.load({google: {families: ["Montserrat:100,100italic,200,200italic,300,300italic,400,400italic,500,500italic,600,600italic,700,700italic,800,800italic,900,900italic", "Inter:300,regular,500,600,700,800", "Poppins:200,200italic,300,300italic,regular,italic,500,500italic,600,700,800,900", "Roboto:300,regular,italic,700"]}});</script>
+  <script
+  type="text/javascript">WebFont.load({google: {families: ["Montserrat:100,100italic,200,200italic,300,300italic,400,400italic,500,500italic,600,600italic,700,700italic,800,800italic,900,900italic", "Inter:300,regular,500,600,700,800", "Poppins:200,200italic,300,300italic,regular,italic,500,500italic,600,700,800,900", "Roboto:300,regular,italic,700"]}});</script>
 
-<style>
-  .dataTables_wrapper {
-    font-family: Roboto, sans-serif;
-    font-size: 13px;
+  <style>
+    .dataTables_wrapper {
+      font-family: Roboto, sans-serif;
+      font-size: 13px;
 
-  }
+    }
 
-  table {
-    font-family: Roboto, sans-serif;
-    font-size: 13px;
-  }
-</style>
+    table {
+      font-family: Roboto, sans-serif;
+      font-size: 13px;
+    }
+  </style>
 
-<h1 style="font-family: Roboto, sans-serif;">ZETA Legislation Tracker</h1>
-<table class="display compact"></table>
+  <h1 style="font-family: Roboto, sans-serif;">ZETA Legislation Tracker</h1>
+  <table class="display compact"></table>
 
 <script>
-    (function () {
-        "use strict";
+  (function () {
+    "use strict";
 
-        $(document).ready(function () {
-            var columns = [];
+    $(document).ready(function () {
+      var columns = [];
 
-            $.ajax({
-                type: "GET",
-                url: "https://sheets.googleapis.com/v4/spreadsheets/1sS95nWK7dy3O0fo1Th8ppVh9xKzMJGu18Baz_MHqQG8/values/legislation-tracker?alt=json&key=AIzaSyC9FlzLyZLHzzsIEWfxKDPH_3Z6CqnmV8U",
-                success: function (data) {
-                    columns = [
-                        {
-                            title: "Status",
-                            width: "5%"
-                        },
-                        {
-                            title: "Congressgov link",
-                            width: "10%"
-                        },
-                        {
-                            title: "Bill Name",
-                            width: "10%"
-                        },/*
+      $.ajax({
+        type: "GET",
+        url: "https://sheets.googleapis.com/v4/spreadsheets/1sS95nWK7dy3O0fo1Th8ppVh9xKzMJGu18Baz_MHqQG8/values/legislation-tracker?alt=json&key=AIzaSyC9FlzLyZLHzzsIEWfxKDPH_3Z6CqnmV8U",
+        success: function (data) {
+          columns = [
+            {
+              title: "Status",
+              width: "5%"
+            },
+            {
+              title: "Congressgov link",
+              width: "10%"
+            },
+            {
+              title: "Bill Name",
+              width: "10%"
+            },/*
                         {
                             title: "Bill Number",
                             width: "10%"
                         },*/
-                        {
-                            title: "Chamber",
-                            width: "5%"
-                        },
-                        {
-                            title: "Bill Summary",
-                            width: "40%"
-                        },
-                        {
-                            title: "House Sponsor(s)",
-                            width: "10%"
-                        },
-                        {
-                            title: "Senate Sponsor(s)",
-                            width: "10%"
-                        },
-                        {
-                            title: "ZETA Policy Pillar",
-                            width: "10%"
-                        }
-                    ]
+            {
+              title: "Chamber",
+              width: "5%"
+            },
+            {
+              title: "Bill Summary",
+              width: "40%"
+            },
+            {
+              title: "House Sponsor(s)",
+              width: "10%"
+            },
+            {
+              title: "Senate Sponsor(s)",
+              width: "10%"
+            },
+            {
+              title: "ZETA Policy Pillar",
+              width: "10%"
+            }
+          ]
 
-                    var tableData = data.values.slice();
-                    tableData.shift();
-                    console.log(tableData);
-                    tableData = tableData.map(item => [item[2], item[1], item[0], /*item[3],*/ item[4], item[7], item[5], item[6], item[8]])
+          var tableData = data.values.slice();
+          tableData.shift();
+          console.log(tableData);
+          tableData = tableData.map(item => [item[2], item[1], item[0], /*item[3],*/ item[4], item[7], item[5], item[6], item[8]])
 
-                    $("table").DataTable({
-                        order: [],
-                        data: tableData,
-                        columns: columns,
-                        columnDefs: [
-                            {
-                                targets: 1,
-                                visible: false,
-                            },
-                            {
-                                targets: 2,
-                                "render": function (data, type, full, meta) {
-                                    return '<a href="' + full[1] + '" target="_blank">' + data + '</a>';
-                                },
-                            }
-                        ],
-                        createdRow: function (row, data, dataIndex, cells) {
-                            if (data[0] == "Endorsed") {
-                                $(row).css({"background-color": "#b2d8b2"})
-                            } else if (data[0] == "Of Interest") {
-                                $(row).css({"background-color": "#ffffcc"})
-                            } else if (data[0] == "Of Concern") {
-                                $(row).css({"background-color": "#ffcccc"})
-                            }
+          $("table").DataTable({
+            order: [],
+            data: tableData,
+            columns: columns,
+            columnDefs: [
+              {
+                targets: 1,
+                visible: false,
+              },
+              {
+                targets: 2,
+                "render": function (data, type, full, meta) {
+                  return '<a href="' + full[1] + '" target="_blank">' + data + '</a>';
+                },
+              }
+            ],
+            createdRow: function (row, data, dataIndex, cells) {
+              if (data[0] == "Endorsed") {
+                $(row).css({"background-color": "#b2d8b2"})
+              } else if (data[0] == "Of Interest") {
+                $(row).css({"background-color": "#ffffcc"})
+              } else if (data[0] == "Of Concern") {
+                $(row).css({"background-color": "#ffcccc"})
+              }
 
-                            /*cells.forEach(cell => {
-                                $(cell).css({"width": "213px"})
-                            });*/
-                        },
-                    })
-                }
-            });
-        });
-    })();
+              /*cells.forEach(cell => {
+                  $(cell).css({"width": "213px"})
+              });*/
+            },
+          })
+        }
+      });
+    });
+  })();
 </script>
 </html>
