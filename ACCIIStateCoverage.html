@@ -162,7 +162,7 @@
 
             })
 
-            map.on("mouseenter", layerName, e => {
+            map.on("click", layerName, e => {
 
                 const stateName = e.features[0].properties.NAME
                 const popupData = mainData.sprData.find(d => d['State'] === stateName)
