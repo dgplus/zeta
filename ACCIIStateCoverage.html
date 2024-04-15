@@ -162,7 +162,7 @@
 
             })
 
-            map.on("click", layerName, e => {
+            map.on("mouseenter", layerName, e => {
 
                 const stateName = e.features[0].properties.NAME
                 const popupData = mainData.sprData.find(d => d['State'] === stateName)
@@ -170,13 +170,24 @@
                 console.log('popupData', stateName, popupData);
                 const text = `
                 <h3>${popupData['State']}</h3>
-                <div><b>ACC II: </b>: ${popupData['ACC II Status']}</div>
-                <div><b>Click for more info</b>: <a href=""https://zeta2030.org/states/#${popupData['State']}"">${popupData['State']}</a></div>
+                <div><b>ACC II: </b>${popupData['ACC II Status']}</div>
+                <div><b>Click for more info: </b><a href=""https://zeta2030.org/states/#${popupData['State']}"">${popupData['State']}</a></div>
                 `
                 new mapboxgl.Popup()
                     .setLngLat(e.lngLat)
                     .setHTML(text)
                     .addTo(map);
+
+                // Store the popup so it can be removed on mouseleave.
+                map.getCanvas().style.cursor = 'pointer'; // Optional: changes the cursor style on hover
+
+                // Handle the mouseleave event to remove the popup and restore the cursor.
+                map.on("mouseleave", layerName, () => {
+                    if (popup) {
+                        popup.remove();
+                    }
+                    map.getCanvas().style.cursor = ''; // Restore the cursor style
+                });
 
             })
             map.on('mouseenter', layerName, () => {
