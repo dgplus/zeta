@@ -178,17 +178,6 @@
                     .setHTML(text)
                     .addTo(map);
 
-                // Store the popup so it can be removed on mouseleave.
-                map.getCanvas().style.cursor = 'pointer'; // Optional: changes the cursor style on hover
-
-                // Handle the mouseleave event to remove the popup and restore the cursor.
-                map.on("mouseleave", layerName, () => {
-                    if (popup) {
-                        popup.remove();
-                    }
-                    map.getCanvas().style.cursor = ''; // Restore the cursor style
-                });
-
             })
             map.on('mouseenter', layerName, () => {
                 map.getCanvas().style.cursor = 'pointer';
