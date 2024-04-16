@@ -99,31 +99,29 @@
             Promise.all([
                 d3.csv(
                     "https://docs.google.com/spreadsheets/d/e/2PACX-1vSJZGrPzOryJSbv1J-SRfy2JIjF1z2W4BwfU0RQjnkIFEPokA9jKS-Wwg9uvDSf01caipTR07BNq1YE/pub?gid=1867448856&single=true&output=csv"
-                ),
+                    ),
                 fetch("base/s_22mr22.json").then(data => data.json())
             ]).then(data => {
+                const [sprData, mapData] = data;
+                console.log("Spreadsheet Data:", sprData); // Check what the data looks like
+                console.log("GeoJSON Data:", mapData); // Confirm structure and property names
 
-                const [sprData, mapData] = data
-                mainData.sprData.push(...sprData)
-                map.getSource("states").setData(mapData)
+                mainData.sprData.push(...sprData);
+                map.getSource("states").setData(mapData);
 
-                // Build an array for the 'match' expression
                 let matchExpression = ['match', ['get', 'NAME']];
-
-                // Populate the match expression array with state names and colors
                 sprData.forEach(row => {
+                    console.log(row['State'], row['ACC II Color']); // Verify each row
                     matchExpression.push(row['State'], row['ACC II Color']);
                 });
 
+                matchExpression.push('rgba(255,0,0,0.5)'); // Use a visible default color for debugging
+                console.log("Match Expression:", JSON.stringify(
+                matchExpression)); // Log the complete expression
 
-                // Set a default color if no match is found
-                matchExpression.push('rgba(0,0,0,0)'); // Change to any default color
-
-                // Apply the color mapping to the layer
                 map.setPaintProperty('states-layer', 'fill-color', matchExpression);
-                map.setPaintProperty('states-layer', 'fill-opacity', .5);
-
-            })
+                map.setPaintProperty('states-layer', 'fill-opacity', 0.5);
+            });
 
             map.on("click", layerName, e => {
 
