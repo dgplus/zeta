@@ -111,8 +111,8 @@
 
                 let matchExpression = ['match', ['get', 'NAME']];
                 sprData.forEach(row => {
-                    console.log(row['State'], row['ACC II Color']); // Verify each row
-                    matchExpression.push(row['State'], row['ACC II Color']);
+                    console.log(row['State'], row['ACC Color']); // Verify each row
+                    matchExpression.push(row['State'], row['ACC Color']);
                 });
 
                 matchExpression.push('rgba(255,0,0,0.5)'); // Use a visible default color for debugging
