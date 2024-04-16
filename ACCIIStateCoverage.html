@@ -112,8 +112,9 @@
 
                 // Populate the match expression array with state names and colors
                 sprData.forEach(row => {
-                    matchExpression.push(d['State'], d['ACC II Color']);
+                    matchExpression.push(row['State'], row['ACC II Color']);
                 });
+
 
                 // Set a default color if no match is found
                 matchExpression.push('rgba(0,0,0,0)'); // Change to any default color
@@ -131,10 +132,11 @@
 
                 console.log('popupData', stateName, popupData);
                 const text = `
-                <h3>${popupData['State']}</h3>
-                <div><b>ACC II: </b>${popupData['ACC II Status']}</div>
-                <div><b>Click for more info: </b><a href=""https://zeta2030.org/states/#${popupData['State']}"">${popupData['State']}</a></div>
-                `
+                    <h3>${popupData['State']}</h3>
+                    <div><b>ACC II: </b>${popupData['ACC II Status']}</div>
+                    <div><b>Click for more info: </b><a href="https://zeta2030.org/states/#${popupData['State']}">${popupData['State']}</a></div>
+                `;
+
                 new mapboxgl.Popup()
                     .setLngLat(e.lngLat)
                     .setHTML(text)
