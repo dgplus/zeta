@@ -107,20 +107,20 @@
                 mainData.sprData.push(...sprData)
                 map.getSource("states").setData(mapData)
 
-                const filtersArray = []
-                sprData
-                    .map(d => {
-                        const filter = [
-                            ['==', ['get', "NAME"], d['State']], d['ACC II Color']
-                        ]
-                        filtersArray.push(...filter)
-                    })
-                map.setPaintProperty(layerName, "fill-color", [
-                    'case',
-                    ...filtersArray,
-                    "transparent"
-                ])
-                map.setPaintProperty(layerName, "fill-opacity", 1)
+                // Build an array for the 'match' expression
+                let matchExpression = ['match', ['get', 'NAME']];
+
+                // Populate the match expression array with state names and colors
+                sprData.forEach(row => {
+                    matchExpression.push(row['State'], row['ACC II Color']);
+                });
+
+                // Set a default color if no match is found
+                matchExpression.push('rgba(0,0,0,0)'); // Change to any default color
+
+                // Apply the color mapping to the layer
+                map.setPaintProperty('states-layer', 'fill-color', matchExpression);
+                map.setPaintProperty('states-layer', 'fill-opacity', 1);
 
             })
 
