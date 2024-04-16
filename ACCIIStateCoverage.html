@@ -115,12 +115,12 @@
                     matchExpression.push(row['State'], row['ACC Color']);
                 });
 
-                matchExpression.push('rgba(255,0,0,0.5)'); // Use a visible default color for debugging
+                matchExpression.push('rgba(0,0,0,0)'); // transparent default
                 console.log("Match Expression:", JSON.stringify(
                 matchExpression)); // Log the complete expression
 
                 map.setPaintProperty('states-layer', 'fill-color', matchExpression);
-                map.setPaintProperty('states-layer', 'fill-opacity', 0.5);
+                map.setPaintProperty('states-layer', 'fill-opacity', .8);
             });
 
             map.on("click", layerName, e => {
