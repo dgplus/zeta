@@ -47,12 +47,32 @@
                 </div>
             </div>
         </div>
-        <div class="map-overlay top"></div>
+        <div class="map-overlay top">
+            <div class="map-overlay-inner">
+                <h3>ACC II State Policy</h3>
+                <div class="legend-container">
+                    <div id="legend" class="column">
+                        <div class="square-container">
+                            <div class="square"
+                                style="background-color: #F4E158; opacity: 1; border: 1px solid rgb(204, 204, 204);">
+                            </div>
+                            <div class="square-text">Adopted</div>
+                        </div>
+                        <div class="square-container">
+                            <div class="square"
+                                style="background-color: #D1CECE; opacity: 1; border: 1px solid rgb(204, 204, 204);">
+                            </div>
+                            <div class="square-text">Not Adopted</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div id="fullscreen">Full screen</div>
     </div>
 
     <script>
-        // const legendDiv = document.getElementById('legend');
+        const legendDiv = document.getElementById('legend');
         // const bordersCheckbox = document.getElementById('borders');
         // const slider = document.getElementById('slider');
         // const sliderValue = document.getElementById('slider-value');
