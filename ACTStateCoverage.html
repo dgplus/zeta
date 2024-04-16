@@ -1,0 +1,206 @@
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Map: ACCII State Policy Status</title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.12.0/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.12.0/mapbox-gl.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,600,300" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="css/map-styles.css">
+</head>
+
+<body>
+    <style>
+        .mapboxgl-popup-content {
+            width: 200px !important;
+        }
+    </style>
+    <div id="mapcontainer">
+        <div id="map" class="mapboxgl-map">
+            <div class="mapboxgl-canary" style="visibility: hidden;"></div>
+            <div
+                class="mapboxgl-canvas-container mapboxgl-interactive mapboxgl-touch-drag-pan mapboxgl-touch-zoom-rotate">
+                <canvas class="mapboxgl-canvas" tabindex="0" aria-label="Map" role="region" width="2880" height="654"
+                    style="width: 1440px; height: 327px;"></canvas></div>
+            <div class="mapboxgl-control-container">
+                <div class="mapboxgl-ctrl-top-left"></div>
+                <div class="mapboxgl-ctrl-top-right"></div>
+                <div class="mapboxgl-ctrl-bottom-left">
+                    <div class="mapboxgl-ctrl" style="display: block;"><a class="mapboxgl-ctrl-logo" target="_blank"
+                            rel="noopener nofollow" href="https://www.mapbox.com/" aria-label="Mapbox logo"></a></div>
+                </div>
+                <div class="mapboxgl-ctrl-bottom-right">
+                    <div class="mapboxgl-ctrl mapboxgl-ctrl-attrib"><button class="mapboxgl-ctrl-attrib-button"
+                            type="button" aria-label="Toggle attribution"><span class="mapboxgl-ctrl-icon"
+                                aria-hidden="true" title="Toggle attribution"></span></button>
+                        <div class="mapboxgl-ctrl-attrib-inner" role="list"><a href="https://www.mapbox.com/about/maps/"
+                                target="_blank" title="Mapbox" aria-label="Mapbox">© Mapbox</a> <a
+                                href="https://www.openstreetmap.org/about/" target="_blank" title="OpenStreetMap"
+                                aria-label="OpenStreetMap">© OpenStreetMap</a> <a class="mapbox-improve-map"
+                                href="https://apps.mapbox.com/feedback/?owner=mapbox&amp;id=light-v11&amp;access_token=pk.eyJ1IjoiZGdwbHVzZGVzaWduIiwiYSI6ImNsZTF2bGtuczFwYXYzcnBrYm5xM2VwZHUifQ.bsWl7gNOVYm4-_62gDEjqA#/-99.48/40.92/3.5"
+                                target="_blank" aria-label="Map feedback" rel="noopener nofollow">Improve this map</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="map-overlay top">
+            <div class="map-overlay-inner">
+                <h3>ACC II State Policy</h3>
+                <div class="legend-container">
+                    <div id="legend" class="column">
+                        <div class="square-container">
+                            <div class="square"
+                                style="background-color: #F4E158; opacity: 1; border: 1px solid rgb(204, 204, 204);">
+                            </div>
+                            <div class="square-text">Adopted</div>
+                        </div>
+                        <div class="square-container">
+                            <div class="square"
+                                style="background-color: #D1CECE; opacity: 1; border: 1px solid rgb(204, 204, 204);">
+                            </div>
+                            <div class="square-text">Not Adopted</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="fullscreen">Full screen</div>
+    </div>
+
+    <script>
+        const legendDiv = document.getElementById('legend');
+        // const bordersCheckbox = document.getElementById('borders');
+        // const slider = document.getElementById('slider');
+        // const sliderValue = document.getElementById('slider-value');
+        const layerName = 'states-layer'
+        const fullscreen = document.getElementById('fullscreen');
+        const mainData = {
+            sprData: []
+        }
+
+        const bounds = [
+            [-217.61932, -32.38898], // Southwest coordinates
+            [-1.70188, 82.70255] // Northeast coordinates
+        ];
+
+        mapboxgl.accessToken =
+            'pk.eyJ1IjoiZGdwbHVzZGVzaWduIiwiYSI6ImNsZTF2bGtuczFwYXYzcnBrYm5xM2VwZHUifQ.bsWl7gNOVYm4-_62gDEjqA';
+        const map = new mapboxgl.Map({
+            container: 'map', // container ID
+            // Choose from Mapbox's core styles, or make your own style with Mapbox Studio
+            style: 'mapbox://styles/mapbox/light-v11',
+            center: {
+                lng: -99.48299257741193,
+                lat: 40.92230044374887
+            },
+            zoom: 3.5, // starting zoom,
+            minZoom: 2.2,
+            maxBounds: bounds,
+            projection: "mercator"
+        });
+
+        map.on('load', () => {
+
+            map.addSource('states', {
+                'type': 'geojson',
+                'data': {
+                    type: 'FeatureCollection',
+                    features: Array(0)
+                }
+            });
+
+            map.addLayer({
+                'id': 'states-layer',
+                'type': 'fill',
+                'source': 'states',
+                'paint': {
+                    // 'fill-color': 'rgba(200, 100, 240, 0.8)',
+                    'fill-outline-color': 'rgba(255, 255, 255, .5)'
+                }
+            });
+
+            Promise.all([
+                d3.csv(
+                    "https://docs.google.com/spreadsheets/d/e/2PACX-1vRucjO0_xbz7kJ1akKPzVjmYS9kZedz5duzHTbSMUMxX8DaCQA06MqV1FmMbHej8tBK8FM240qGC4EQ/pub?gid=1867448856&single=true&output=csv"
+                ),
+                fetch("base/s_22mr22.json").then(data => data.json())
+            ]).then(data => {
+                const [sprData, mapData] = data;
+                console.log("Spreadsheet Data:", sprData); // Check what the data looks like
+                console.log("GeoJSON Data:", mapData); // Confirm structure and property names
+
+                mainData.sprData.push(...sprData);
+                map.getSource("states").setData(mapData);
+
+                let matchExpression = ['match', ['get', 'NAME']];
+                sprData.forEach(row => {
+                    console.log(row['State'], row['ACT Color']); // Verify each row
+                    matchExpression.push(row['State'], row['ACT Color']);
+                });
+
+                matchExpression.push('rgba(0,0,0,0)'); // transparent default
+                console.log("Match Expression:", JSON.stringify(
+                    matchExpression)); // Log the complete expression
+
+                map.setPaintProperty('states-layer', 'fill-color', matchExpression);
+                map.setPaintProperty('states-layer', 'fill-opacity', .8);
+            });
+
+            map.on("click", layerName, e => {
+
+                const stateName = e.features[0].properties.NAME
+                const popupData = mainData.sprData.find(d => d['State'] === stateName)
+
+                console.log('popupData', stateName, popupData);
+                const text = `
+                    <h3>${popupData['State']}</h3>
+                    <div><b>ACC II: </b>${popupData['ACT Status']}</div>
+                    <div><b>Click for more info: </b><a href="https://zeta2030.org/states/#${popupData['State']}">${popupData['State']}</a></div>
+                `;
+
+                new mapboxgl.Popup()
+                    .setLngLat(e.lngLat)
+                    .setHTML(text)
+                    .addTo(map);
+
+            })
+            map.on('mouseenter', layerName, () => {
+                map.getCanvas().style.cursor = 'pointer';
+            });
+
+            // Change it back to a pointer when it leaves.
+            map.on('mouseleave', layerName, () => {
+                map.getCanvas().style.cursor = '';
+            });
+
+        });
+
+        fullscreen.addEventListener('click', toggleFullscreen)
+
+        function toggleFullscreen() {
+            let elem = document.getElementById("mapcontainer");
+            if (!document.fullscreenElement) {
+                elem.requestFullscreen().catch((err) => {
+                    alert(`Error attempting to enable fullscreen mode: ${err.message} (${err.name})`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        function clear(str) {
+            // console.log('str', str);
+            if (!str) return "";
+            return str.replaceAll(/[\,\.]/g, " ").replace(/[\s]{2,}/, " ").trim().toLowerCase()
+        }
+    </script>
+
+
+
+</body>
+
+</html>
