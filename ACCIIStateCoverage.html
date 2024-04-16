@@ -62,6 +62,11 @@
             sprData: []
         }
 
+        const bounds = [
+            [-217.61932, -32.38898], // Southwest coordinates
+            [-1.70188, 82.70255] // Northeast coordinates
+        ];
+
         mapboxgl.accessToken =
             'pk.eyJ1IjoiZGdwbHVzZGVzaWduIiwiYSI6ImNsZTF2bGtuczFwYXYzcnBrYm5xM2VwZHUifQ.bsWl7gNOVYm4-_62gDEjqA';
         const map = new mapboxgl.Map({
@@ -73,6 +78,8 @@
                 lat: 40.92230044374887
             },
             zoom: 3.5, // starting zoom,
+            minZoom: 2.2,
+            maxBounds: bounds,
             projection: "mercator"
         });
 
@@ -99,7 +106,7 @@
             Promise.all([
                 d3.csv(
                     "https://docs.google.com/spreadsheets/d/e/2PACX-1vRucjO0_xbz7kJ1akKPzVjmYS9kZedz5duzHTbSMUMxX8DaCQA06MqV1FmMbHej8tBK8FM240qGC4EQ/pub?gid=1867448856&single=true&output=csv"
-                    ),
+                ),
                 fetch("base/s_22mr22.json").then(data => data.json())
             ]).then(data => {
                 const [sprData, mapData] = data;
@@ -117,7 +124,7 @@
 
                 matchExpression.push('rgba(0,0,0,0)'); // transparent default
                 console.log("Match Expression:", JSON.stringify(
-                matchExpression)); // Log the complete expression
+                    matchExpression)); // Log the complete expression
 
                 map.setPaintProperty('states-layer', 'fill-color', matchExpression);
                 map.setPaintProperty('states-layer', 'fill-opacity', .8);
