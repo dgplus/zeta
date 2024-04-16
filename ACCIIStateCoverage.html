@@ -125,7 +125,7 @@
 
             Promise.all([
                 d3.csv(
-                    "https://docs.google.com/spreadsheets/d/e/2PACX-1vRucjO0_xbz7kJ1akKPzVjmYS9kZedz5duzHTbSMUMxX8DaCQA06MqV1FmMbHej8tBK8FM240qGC4EQ/pub?gid=1867448856&single=true&output=csv"
+                    "https://docs.google.com/spreadsheets/d/e/2PACX-1vSJZGrPzOryJSbv1J-SRfy2JIjF1z2W4BwfU0RQjnkIFEPokA9jKS-Wwg9uvDSf01caipTR07BNq1YE/pub?gid=1867448856&single=true&output=csv"
                 ),
                 fetch("base/s_22mr22.json").then(data => data.json())
             ]).then(data => {
@@ -138,8 +138,8 @@
 
                 let matchExpression = ['match', ['get', 'NAME']];
                 sprData.forEach(row => {
-                    console.log(row['State'], row['ACC Color']); // Verify each row
-                    matchExpression.push(row['State'], row['ACC Color']);
+                    console.log(row['State'], row['ACC II Color']); // Verify each row
+                    matchExpression.push(row['State'], row['ACC II Color']);
                 });
 
                 matchExpression.push('rgba(0,0,0,0)'); // transparent default
@@ -156,10 +156,18 @@
                 const popupData = mainData.sprData.find(d => d['State'] === stateName)
 
                 console.log('popupData', stateName, popupData);
+
+                let moreInfoText;
+                if (popupData['ACC II Status'] === "Not Adopted") {
+                    moreInfoText = "More info to come.";
+                } else {
+                    moreInfoText =
+                        `<a href="https://zeta2030.org/states/#${popupData['State']}">${popupData['State']}</a>`;
+                }
                 const text = `
                     <h3>${popupData['State']}</h3>
-                    <div><b>ACC II: </b>${popupData['ACC II Status']}</div>
-                    <div><b>Click for more info: </b><a href="https://zeta2030.org/states/#${popupData['State']}">${popupData['State']}</a></div>
+                    <div><b>ACT: </b>${popupData['ACC II Status']}</div>
+                    <div><b>Click for more info: </b>${moreInfoText}</div>
                 `;
 
                 new mapboxgl.Popup()
