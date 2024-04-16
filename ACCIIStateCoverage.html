@@ -47,53 +47,15 @@
                 </div>
             </div>
         </div>
-        <div class="map-overlay top">
-            <!-- <div class="map-overlay-inner">
-                <h3>State Coverage</h3>
-                <div class="legend-container">
-                    <div id="legend" class="column">
-                        <div class="square-container">
-                            <div class="square"
-                                style="background-color: rgb(0, 72, 168); opacity: 1; border: 1px solid rgb(204, 204, 204);">
-                            </div>
-                            <div class="square-text">Tier 1 (76-100%)</div>
-                        </div>
-                        <div class="square-container">
-                            <div class="square"
-                                style="background-color: rgb(6, 94, 212); opacity: 1; border: 1px solid rgb(204, 204, 204);">
-                            </div>
-                            <div class="square-text">Tier 2 (51-75%)</div>
-                        </div>
-                        <div class="square-container">
-                            <div class="square"
-                                style="background-color: rgb(29, 139, 228); opacity: 1; border: 1px solid rgb(204, 204, 204);">
-                            </div>
-                            <div class="square-text">Tier 3 (26-50%)</div>
-                        </div>
-                        <div class="square-container">
-                            <div class="square"
-                                style="background-color: rgb(117, 211, 239); opacity: 1; border: 1px solid rgb(204, 204, 204);">
-                            </div>
-                            <div class="square-text">Tier 4 (0.1-25%)</div>
-                        </div>
-                        <div class="square-container">
-                            <div class="square"
-                                style="background-color: rgb(211, 211, 211); opacity: 1; border: 1px solid rgb(204, 204, 204);">
-                            </div>
-                            <div class="square-text">No Coverage (0%)</div>
-                        </div>
-                    </div>
-                </div>
-            </div> -->
-        </div>
+        <div class="map-overlay top"></div>
         <div id="fullscreen">Full screen</div>
     </div>
 
     <script>
-        const legendDiv = document.getElementById('legend');
+        // const legendDiv = document.getElementById('legend');
         // const bordersCheckbox = document.getElementById('borders');
-        const slider = document.getElementById('slider');
-        const sliderValue = document.getElementById('slider-value');
+        // const slider = document.getElementById('slider');
+        // const sliderValue = document.getElementById('slider-value');
         const layerName = 'states-layer'
         const fullscreen = document.getElementById('fullscreen');
         const mainData = {
@@ -113,12 +75,6 @@
             zoom: 3.5, // starting zoom,
             projection: "mercator"
         });
-
-        const statusColors = {
-        'Adopted': '#F4E158',
-        'Not Adopted': '#D1CECE',
-        'Unknown': 'transparent' // Default for undefined statuses
-    };
 
         map.on('load', () => {
 
