@@ -157,17 +157,17 @@
 
                 console.log('popupData', stateName, popupData);
 
-                // let moreInfoText;
-                // if (popupData['ACC II Status'] === "Not Adopted") {
-                //     moreInfoText = "More info to come.";
-                // } else {
-                //     moreInfoText =
-                //         `<a href="https://zeta2030.org/states/${popupData['State']}">${popupData['State']}</a>`;
-                // }
+                let moreInfoText;
+                if (popupData['ACC II Link'] === "More info coming soon.") {
+                    moreInfoText = "More info coming soon.";
+                } else {
+                    moreInfoText =
+                        `<a href="${popupData['ACC II Link']}">${popupData['State']}</a>`;
+                }
                 const text = `
                     <h3>${popupData['State']}</h3>
                     <div><b>ACC II Status: </b>${popupData['ACC II Status']}</div>
-                    <div><b>Click for more info: </b>${popupData['ACC II Link']}</div>
+                    <div><b>Click for more info: </b>${moreInfoText}</div>
                 `;
 
                 new mapboxgl.Popup()
