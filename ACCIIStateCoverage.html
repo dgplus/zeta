@@ -114,6 +114,12 @@
             projection: "mercator"
         });
 
+        const statusColors = {
+        'Adopted': '#F4E158',
+        'Not Adopted': '#D1CECE',
+        'Unknown': 'transparent' // Default for undefined statuses
+    };
+
         map.on('load', () => {
 
             map.addSource('states', {
@@ -149,7 +155,7 @@
                 sprData
                     .map(d => {
                         const filter = [
-                            ['==', ['get', "NAME"], d['State']], d['Color']
+                            ['==', ['get', "NAME"], d['State']], d['ACC II Color']
                         ]
                         filtersArray.push(...filter)
                     })
