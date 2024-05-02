@@ -161,8 +161,7 @@
                 if (popupData['ACT Link'] === "More info coming soon.") {
                     moreInfoText = "More info coming soon.";
                 } else {
-                    moreInfoText =
-                        `<a href="${popupData['ACT Link']}">${popupData['State']}</a>`;
+                    moreInfoText = `<a href="${popupData['ACT Link']}" target="_blank">${popupData['State']}</a>`;
                 }
                 const text = `
                     <h3>${popupData['State']}</h3>
