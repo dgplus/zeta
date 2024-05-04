@@ -83,8 +83,7 @@
 
           var tableData = data.values.slice();
           tableData.shift();
-          tableData = tableData.map(item => [item[0], item[3], item[5], item[6], item[4], item[7], item[9], item[10], item[11], item[12], item[14], item[15]])
-
+          tableData = tableData.map(item => [item[0], item[3], item[5], item[6], item[4], item[7], item[9], item[10], item[11], item[12], item[13], item[14]]);
           $("table").DataTable({
             order: [[0, 'desc'], [11, 'asc']],
             data: tableData,
@@ -102,9 +101,8 @@
               },
               {
                 targets: 9,
+                visible: false,
                 "render": function (data, type, full, meta) {
-                  console.log(data);
-                  console.log(full[9]);
                   if (data.indexOf("http") > -1) {
                     return '<a href="' + full[9] + '" target="_blank">Link</a>';
                   } else {
@@ -115,7 +113,14 @@
               },
               {
                 targets: 11,
-                type: "date"
+                type: "date",
+                "render": function (data, type, full, meta) {
+                  if (data) {
+                    return data;
+                  }
+                  return '';
+
+                },
               }
             ],
             createdRow: function (row, data, dataIndex, cells) {
