@@ -18,6 +18,15 @@
             width: 100%;
         }
         
+        .popup h3 {
+            font-size:14px;
+            margin-bottom:5px;
+        }
+        
+        .popup p {
+            font-size: 12px;
+            margin: 0px;
+        }
         #legend {
             background: white;
             padding: 10px;
@@ -112,11 +121,11 @@
                     map.on('click', 'csvData', function(e) {
                         const coordinates = e.features[0].geometry.coordinates.slice();
                         const properties = e.features[0].properties;
-                        const description = `<h3>${properties.Company}</h3>
+                        const description = `<div class=popup><h3>${properties.Company}</h3>
               <p>Type: ${properties.Type}</p>
               <p>${properties.InvestmentText}</p>
                         <p>${properties.Jobs}</p>
-<p><a target="_blank" href="${properties.AnnouncementLink}">Source</a></p>`;
+<p><a target="_blank" href="${properties.AnnouncementLink}">Source</a></p></div>`;
 
                         new mapboxgl.Popup()
                             .setLngLat(coordinates)
