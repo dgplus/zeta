@@ -51,9 +51,7 @@
         mapboxgl.accessToken = 'pk.eyJ1IjoiZGdwbHVzZGVzaWduIiwiYSI6ImNsZTF2bmZnbzBoeGkzb28yOW5kemF0ZHEifQ.wcLBXkbgle9WkYCnzSM8Cw';
         const map = new mapboxgl.Map({
             container: 'map',
-            style: 'mapbox://styles/mapbox/light-v11',
-            center: [-98.5795, 39.8283],
-            zoom: 3
+            style: 'mapbox://styles/mapbox/light-v11'
         });
 
         const legend = document.getElementById('legend');
@@ -89,6 +87,15 @@
                         data: data
                     });
 
+                    // Convert TotalInvestmentAmount to a number
+                    geojson.features.forEach(feature => {
+                        if (feature.properties.TotalInvestmentAmount) {
+                            feature.properties.TotalInvestmentAmount = Number(feature.properties.TotalInvestmentAmount);
+                        } else {
+                            feature.properties.TotalInvestmentAmount = 0; // Default to 0 if the field is missing or invalid
+                        }
+                    });
+
                     map.addLayer({
                         id: 'csvData',
                         type: 'circle',
@@ -96,7 +103,7 @@
                         paint: {
                             'circle-radius': [
                                 'interpolate', ['exponential', 1.5], // Exponential scaling for smoother transitions
-                                ['get', 'TotalInvestment'],
+                                ['get', 'TotalInvestmentAmount'],
                                 0, 3, // Smallest circles for zero or very small investments
                                 100000, 6, // Medium size for moderate investments
                                 1000000, 12, // Larger circles for investments in the millions
