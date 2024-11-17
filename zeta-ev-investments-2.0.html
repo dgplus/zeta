@@ -52,11 +52,12 @@
       'Minerals': '#000000',
       'Battery Production': '#F4E158',
       'Recycling': '#00D41E',
-        'Charging': '#71E5F5',
-           'Utility': '#679BFA',
-           'Other': '#F37325'
+      'Charging': '#71E5F5',
+      'Utility': '#679BFA',
+      'Other': '#F37325'
     };
 
+    // Add legend dynamically
     Object.keys(colors).forEach(type => {
       const legendItem = document.createElement('div');
       legendItem.innerHTML = `<span style="background-color:${colors[type]}; width:12px; height:12px; display:inline-block; margin-right:5px;"></span>${type}`;
@@ -68,11 +69,19 @@
       url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQlH-qVkT59Xm2bRVXRNxOqB4Z0jOMq-i7n8vfE-VB0bHGa-Ims-Y0o96Qs5YXL-FRIEOiB4X9Ncc8_/pub?gid=447959767&single=true&output=csv',
       dataType: "text",
       success: function (csvData) {
+        console.log("CSV Data Loaded:", csvData); // Debug CSV data
+
         csv2geojson.csv2geojson(csvData, {
-          latfield: 'lat',
-          lonfield: 'lon',
+          latfield: 'lat', // Update to match the CSV column name
+          lonfield: 'lon', // Update to match the CSV column name
           delimiter: ','
         }, function (err, data) {
+          if (err) {
+            console.error("Error in GeoJSON conversion:", err);
+            return;
+          }
+          console.log("Converted GeoJSON Data:", data); // Debug GeoJSON data
+
           map.addSource('csvData', {
             type: 'geojson',
             data: data
@@ -101,18 +110,20 @@
                 'Recycling', colors['Recycling'],
                 'Charging', colors['Charging'],
                 'Utility', colors['Utility'],
-                'Other', colors['Other']
+                'Other', colors['Other'],
+                '#CCCCCC' // Default color
               ],
               'circle-opacity': 0.65
             }
           });
 
+          // Add interaction for popups
           map.on('click', 'csvData', function (e) {
             const coordinates = e.features[0].geometry.coordinates.slice();
             const properties = e.features[0].properties;
-            const description = `<h3>${properties.Name}</h3>
+            const description = `<h3>${properties.Company}</h3>
               <p>Type: ${properties.Type}</p>
-              <p>Total Investment: $${parseInt(properties.TotalInvestmentAmount).toLocaleString()}</p>`;
+              <p>Total Investment: $${Number(properties.TotalInvestmentAmount).toLocaleString()}</p>`;
 
             new mapboxgl.Popup()
               .setLngLat(coordinates)
@@ -120,6 +131,7 @@
               .addTo(map);
           });
 
+          // Change cursor to pointer on hover
           map.on('mouseenter', 'csvData', function () {
             map.getCanvas().style.cursor = 'pointer';
           });
@@ -128,6 +140,9 @@
             map.getCanvas().style.cursor = '';
           });
         });
+      },
+      error: function (error) {
+        console.error("Error loading CSV:", error);
       }
     });
   </script>
