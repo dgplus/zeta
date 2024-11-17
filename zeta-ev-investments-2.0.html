@@ -96,15 +96,7 @@
                             type: 'circle',
                             source: 'csvData',
                             paint: {
-                                'circle-radius': [
-                                    'interpolate', ['exponential', 1.5],
-                                    ['get', 'Number'],
-                                    0, 3,
-                                    100000, 6,
-                                    1000000, 12,
-                                    5000000, 20,
-                                    10000000, 30
-                                ],
+                                'circle-radius': 10,
                                 'circle-color': [
                                     'match', ['get', 'Type'],
                                     'OEM', colors['OEM'],
