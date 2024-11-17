@@ -2,142 +2,143 @@
 <html>
 
 <head>
-  <meta charset='utf-8' />
-  <title>Map with Investment Data</title>
-  <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.0/jquery.min.js"></script>
-  <script src='https://api.mapbox.com/mapbox-gl-js/v2.0.1/mapbox-gl.js'></script>
-  <link href='https://api.mapbox.com/mapbox-gl-js/v2.0.1/mapbox-gl.css' rel='stylesheet' />
-  <script src='https://npmcdn.com/csv2geojson@latest/csv2geojson.js'></script>
-  <script src='https://npmcdn.com/@turf/turf/turf.min.js'></script>
-  <style>
-    #map {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      width: 100%;
-    }
-
-    #legend {
-      background: white;
-      padding: 10px;
-      font-family: Arial, sans-serif;
-      font-size: 12px;
-      position: absolute;
-      bottom: 20px;
-      left: 10px;
-      z-index: 1;
-      border-radius: 3px;
-      box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
-    }
-  </style>
+    <meta charset='utf-8' />
+    <title>Map with Investment Data</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.0/jquery.min.js"></script>
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.0.1/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.0.1/mapbox-gl.css' rel='stylesheet' />
+    <script src='https://npmcdn.com/csv2geojson@latest/csv2geojson.js'></script>
+    <script src='https://npmcdn.com/@turf/turf/turf.min.js'></script>
+    <style>
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+        }
+        
+        #legend {
+            background: white;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            position: absolute;
+            bottom: 20px;
+            left: 10px;
+            z-index: 1;
+            border-radius: 3px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+        }
+    </style>
 </head>
 
 <body>
-  <div id="map"></div>
-  <div id="legend"></div>
+    <div id="map"></div>
+    <div id="legend"></div>
 
-  <script>
-    mapboxgl.accessToken = 'pk.eyJ1IjoiZGdwbHVzZGVzaWduIiwiYSI6ImNsZTF2bmZnbzBoeGkzb28yOW5kemF0ZHEifQ.wcLBXkbgle9WkYCnzSM8Cw';
-    const map = new mapboxgl.Map({
-      container: 'map',
-      style: 'mapbox://styles/mapbox/light-v11',
-      center: [-98.5795, 39.8283],
-      zoom: 3
-    });
+    <script>
+        mapboxgl.accessToken = 'pk.eyJ1IjoiZGdwbHVzZGVzaWduIiwiYSI6ImNsZTF2bmZnbzBoeGkzb28yOW5kemF0ZHEifQ.wcLBXkbgle9WkYCnzSM8Cw';
+        const map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/light-v11',
+            center: [-98.5795, 39.8283],
+            zoom: 3
+        });
 
-    const legend = document.getElementById('legend');
-    const colors = {
-      'OEM': '#b21fc8',
-      'Minerals': '#000000',
-      'Battery Production': '#F4E158',
-      'Recycling': '#00D41E',
-      'Charging': '#71E5F5',
-      'Utility': '#679BFA',
-      'Other': '#F37325'
-    };
+        const legend = document.getElementById('legend');
+        const colors = {
+            'OEM': '#b21fc8',
+            'Minerals': '#000000',
+            'Battery Production': '#F4E158',
+            'Recycling': '#00D41E',
+            'Charging': '#71E5F5',
+            'Utility': '#679BFA',
+            'Other': '#F37325'
+        };
 
-    // Add legend dynamically
-    Object.keys(colors).forEach(type => {
-      const legendItem = document.createElement('div');
-      legendItem.innerHTML = `<span style="background-color:${colors[type]}; width:12px; height:12px; display:inline-block; margin-right:5px;"></span>${type}`;
-      legend.appendChild(legendItem);
-    });
+        // Add legend dynamically
+        Object.keys(colors).forEach(type => {
+            const legendItem = document.createElement('div');
+            legendItem.innerHTML = `<span style="background-color:${colors[type]}; width:12px; height:12px; display:inline-block; margin-right:5px;"></span>${type}`;
+            legend.appendChild(legendItem);
+        });
 
         $.ajax({
-      type: "GET",
-      url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQlH-qVkT59Xm2bRVXRNxOqB4Z0jOMq-i7n8vfE-VB0bHGa-Ims-Y0o96Qs5YXL-FRIEOiB4X9Ncc8_/pub?gid=447959767&single=true&output=csv',
-      dataType: "text",
-      success: function (csvData) {
-        csv2geojson.csv2geojson(csvData, {
-          latfield: 'lat',
-          lonfield: 'lon',
-          delimiter: ','
-        }, function (err, data) {
-          map.addSource('csvData', {
-            type: 'geojson',
-            data: data
-          });
+            type: "GET",
+            url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQlH-qVkT59Xm2bRVXRNxOqB4Z0jOMq-i7n8vfE-VB0bHGa-Ims-Y0o96Qs5YXL-FRIEOiB4X9Ncc8_/pub?gid=447959767&single=true&output=csv',
+            dataType: "text",
+            success: function(csvData) {
+                csv2geojson.csv2geojson(csvData, {
+                    latfield: 'lat',
+                    lonfield: 'lon',
+                    delimiter: ','
+                }, function(err, data) {
+                    map.addSource('csvData', {
+                        type: 'geojson',
+                        data: data
+                    });
 
-          map.addLayer({
-            id: 'csvData',
-            type: 'circle',
-            source: 'csvData',
-            paint: {
-              'circle-radius': [
-                'interpolate',
-                ['linear'],
-                ['get', 'TotalInvestmentAmount'],
-                0, 5,
-                100000, 10,
-                1000000, 15,
-                5000000, 20
-              ],
-              'circle-color': [
-                'match',
-                ['get', 'Type'],
-                'OEM', colors['OEM'],
-                'Minerals', colors['Minerals'],
-                'Battery Production', colors['Battery Production'],
-                'Recycling', colors['Recycling'],
-                'Charging', colors['Charging'],
-                'Utility', colors['Utility'],
-                'Other', colors['Other'],
-                '#CCCCCC' // Default color
-              ],
-              'circle-opacity': 0.65
-            }
-          });
+                    map.addLayer({
+                        id: 'csvData',
+                        type: 'circle',
+                        source: 'csvData',
+                        paint: {
+                            'circle-radius': [
+                                'interpolate', ['exponential', 1.5], // Exponential scaling for smoother transitions
+                                ['get', 'TotalInvestmentAmount'],
+                                0, 3, // Smallest circles for zero or very small investments
+                                100000, 6, // Medium size for moderate investments
+                                1000000, 12, // Larger circles for investments in the millions
+                                5000000, 20, // Maximum size for largest investments
+                                10000000, 30 // Extra-large investments
+                            ],
+                            'circle-color': [
+                                'match', ['get', 'Type'],
+                                'OEM', colors['OEM'],
+                                'Minerals', colors['Minerals'],
+                                'Battery Production', colors['Battery Production'],
+                                'Recycling', colors['Recycling'],
+                                'Charging', colors['Charging'],
+                                'Utility', colors['Utility'],
+                                'Other', colors['Other'],
+                                '#CCCCCC' // Default color
+                            ],
+                            'circle-opacity': 0.65
+                        }
+                    });
 
-          // Add interaction for popups
-          map.on('click', 'csvData', function (e) {
-            const coordinates = e.features[0].geometry.coordinates.slice();
-            const properties = e.features[0].properties;
-            const description = `<h3>${properties.Company}</h3>
+                    // Add interaction for popups
+                    map.on('click', 'csvData', function(e) {
+                        const coordinates = e.features[0].geometry.coordinates.slice();
+                        const properties = e.features[0].properties;
+                        const description = `<h3>${properties.Company}</h3>
               <p>Type: ${properties.Type}</p>
-              <p>Total Investment: $${Number(properties.TotalInvestmentAmount).toLocaleString()}</p>`;
+              <p>${properties.InvestmentText}</p>
+                        <p>${properties.Jobs}</p>
+<p><a target="_blank" href="${properties.AnnouncementLink}">Source</a></p>`;
 
-            new mapboxgl.Popup()
-              .setLngLat(coordinates)
-              .setHTML(description)
-              .addTo(map);
-          });
+                        new mapboxgl.Popup()
+                            .setLngLat(coordinates)
+                            .setHTML(description)
+                            .addTo(map);
+                    });
 
-          // Change cursor to pointer on hover
-          map.on('mouseenter', 'csvData', function () {
-            map.getCanvas().style.cursor = 'pointer';
-          });
+                    // Change cursor to pointer on hover
+                    map.on('mouseenter', 'csvData', function() {
+                        map.getCanvas().style.cursor = 'pointer';
+                    });
 
-          map.on('mouseleave', 'csvData', function () {
-            map.getCanvas().style.cursor = '';
-          });
+                    map.on('mouseleave', 'csvData', function() {
+                        map.getCanvas().style.cursor = '';
+                    });
+                });
+            },
+            error: function(error) {
+                console.error("Error loading CSV:", error);
+            }
         });
-      },
-      error: function (error) {
-        console.error("Error loading CSV:", error);
-      }
-    });
-  </script>
+    </script>
 </body>
 
 </html>
