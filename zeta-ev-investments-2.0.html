@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset='utf-8' />
+  <title>Map with Investment Data</title>
+  <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.0/jquery.min.js"></script>
+  <script src='https://api.mapbox.com/mapbox-gl-js/v2.0.1/mapbox-gl.js'></script>
+  <link href='https://api.mapbox.com/mapbox-gl-js/v2.0.1/mapbox-gl.css' rel='stylesheet' />
+  <script src='https://npmcdn.com/csv2geojson@latest/csv2geojson.js'></script>
+  <script src='https://npmcdn.com/@turf/turf/turf.min.js'></script>
+  <style>
+    #map {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 100%;
+    }
+
+    #legend {
+      background: white;
+      padding: 10px;
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      position: absolute;
+      bottom: 20px;
+      left: 10px;
+      z-index: 1;
+      border-radius: 3px;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    }
+  </style>
+</head>
+
+<body>
+  <div id="map"></div>
+  <div id="legend"></div>
+
+  <script>
+    mapboxgl.accessToken = 'pk.eyJ1IjoiZGdwbHVzZGVzaWduIiwiYSI6ImNsZTF2bmZnbzBoeGkzb28yOW5kemF0ZHEifQ.wcLBXkbgle9WkYCnzSM8Cw';
+    const map = new mapboxgl.Map({
+      container: 'map',
+      style: 'mapbox://styles/mapbox/light-v11',
+      center: [-98.5795, 39.8283],
+      zoom: 3
+    });
+
+    const legend = document.getElementById('legend');
+    const colors = {
+      'Type A': '#ff0000',
+      'Type B': '#00ff00',
+      'Type C': '#0000ff',
+      'Type D': '#ff9900'
+    };
+
+    Object.keys(colors).forEach(type => {
+      const legendItem = document.createElement('div');
+      legendItem.innerHTML = `<span style="background-color:${colors[type]}; width:12px; height:12px; display:inline-block; margin-right:5px;"></span>${type}`;
+      legend.appendChild(legendItem);
+    });
+
+    $.ajax({
+      type: "GET",
+      url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQlH-qVkT59Xm2bRVXRNxOqB4Z0jOMq-i7n8vfE-VB0bHGa-Ims-Y0o96Qs5YXL-FRIEOiB4X9Ncc8_/pub?gid=447959767&single=true&output=csv',
+      dataType: "text",
+      success: function (csvData) {
+        csv2geojson.csv2geojson(csvData, {
+          latfield: 'Latitude',
+          lonfield: 'Longitude',
+          delimiter: ','
+        }, function (err, data) {
+          map.addSource('csvData', {
+            type: 'geojson',
+            data: data
+          });
+
+          map.addLayer({
+            id: 'csvData',
+            type: 'circle',
+            source: 'csvData',
+            paint: {
+              'circle-radius': [
+                'interpolate',
+                ['linear'],
+                ['get', 'TotalInvestmentAmount'],
+                0, 5,
+                100000, 10,
+                1000000, 15,
+                5000000, 20
+              ],
+              'circle-color': [
+                'match',
+                ['get', 'Type'],
+                'Type A', colors['Type A'],
+                'Type B', colors['Type B'],
+                'Type C', colors['Type C'],
+                'Type D', colors['Type D'],
+                '#ccc' // Default color
+              ],
+              'circle-opacity': 0.8
+            }
+          });
+
+          map.on('click', 'csvData', function (e) {
+            const coordinates = e.features[0].geometry.coordinates.slice();
+            const properties = e.features[0].properties;
+            const description = `<h3>${properties.Name}</h3>
+              <p>Type: ${properties.Type}</p>
+              <p>Total Investment: $${parseInt(properties.TotalInvestmentAmount).toLocaleString()}</p>`;
+
+            new mapboxgl.Popup()
+              .setLngLat(coordinates)
+              .setHTML(description)
+              .addTo(map);
+          });
+
+          map.on('mouseenter', 'csvData', function () {
+            map.getCanvas().style.cursor = 'pointer';
+          });
+
+          map.on('mouseleave', 'csvData', function () {
+            map.getCanvas().style.cursor = '';
+          });
+        });
+      }
+    });
+  </script>
+</body>
+
+</html>
