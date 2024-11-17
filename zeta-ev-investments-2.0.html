@@ -51,7 +51,8 @@
       'Type A': '#ff0000',
       'Type B': '#00ff00',
       'Type C': '#0000ff',
-      'Type D': '#ff9900'
+      'Type D': '#ff9900',
+        'Type E': '#ff9900'
     };
 
     Object.keys(colors).forEach(type => {
@@ -66,8 +67,8 @@
       dataType: "text",
       success: function (csvData) {
         csv2geojson.csv2geojson(csvData, {
-          latfield: 'Latitude',
-          lonfield: 'Longitude',
+          latfield: 'lat',
+          lonfield: 'lon',
           delimiter: ','
         }, function (err, data) {
           map.addSource('csvData', {
@@ -92,10 +93,12 @@
               'circle-color': [
                 'match',
                 ['get', 'Type'],
-                'Type A', colors['Type A'],
-                'Type B', colors['Type B'],
-                'Type C', colors['Type C'],
-                'Type D', colors['Type D'],
+                'Battery Production', colors['Type A'],
+                'Charging', colors['Type B'],
+                'Minerals', colors['Type C'],
+                'Recycling', colors['Type D'],
+              'Utility', colors['Type E'],
+
                 '#ccc' // Default color
               ],
               'circle-opacity': 0.8
