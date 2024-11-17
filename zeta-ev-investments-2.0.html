@@ -64,24 +64,16 @@
       legend.appendChild(legendItem);
     });
 
-    $.ajax({
+        $.ajax({
       type: "GET",
       url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQlH-qVkT59Xm2bRVXRNxOqB4Z0jOMq-i7n8vfE-VB0bHGa-Ims-Y0o96Qs5YXL-FRIEOiB4X9Ncc8_/pub?gid=447959767&single=true&output=csv',
       dataType: "text",
       success: function (csvData) {
-        console.log("CSV Data Loaded:", csvData); // Debug CSV data
-
         csv2geojson.csv2geojson(csvData, {
-          latfield: 'lat', // Update to match the CSV column name
-          lonfield: 'lon', // Update to match the CSV column name
+          latfield: 'lat',
+          lonfield: 'lon',
           delimiter: ','
         }, function (err, data) {
-          if (err) {
-            console.error("Error in GeoJSON conversion:", err);
-            return;
-          }
-          console.log("Converted GeoJSON Data:", data); // Debug GeoJSON data
-
           map.addSource('csvData', {
             type: 'geojson',
             data: data
