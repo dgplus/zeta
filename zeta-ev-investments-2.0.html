@@ -85,14 +85,14 @@
                         latfield: 'lat', // Ensure these match the CSV column headers
                         lonfield: 'lon', // Ensure these match the CSV column headers
                         delimiter: ','
-                    }, function (err, geojson) {
-                        if (err) {
-                            console.error("Error in GeoJSON conversion:", err);
-                            return;
-                        }
+                    }, function(err, data) {
+                    map.addSource('csvData', {
+                        type: 'geojson',
+                        data: data
+                    });
 
                         // Convert TotalInvestmentAmount to a number
-                        geojson.features.forEach(feature => {
+                        data.features.forEach(feature => {
                             feature.properties.TotalInvestmentAmount = Number(feature.properties.TotalInvestmentAmount) || 0;
                         });
 
