@@ -19,14 +19,15 @@
         }
         
         .popup h3 {
-            font-size:14px;
-            margin-bottom:5px;
+            font-size: 14px;
+            margin-bottom: 5px;
         }
         
         .popup p {
             font-size: 12px;
             margin: 0px;
         }
+        
         #legend {
             background: white;
             padding: 10px;
@@ -95,7 +96,7 @@
                         paint: {
                             'circle-radius': [
                                 'interpolate', ['exponential', 1.5], // Exponential scaling for smoother transitions
-                                ['get', 'TotalInvestmentAmount'],
+                                ['get', 'TotalInvestment'],
                                 0, 3, // Smallest circles for zero or very small investments
                                 100000, 6, // Medium size for moderate investments
                                 1000000, 12, // Larger circles for investments in the millions
@@ -140,6 +141,14 @@
 
                     map.on('mouseleave', 'csvData', function() {
                         map.getCanvas().style.cursor = '';
+                    });
+                    map.on('load', function() {
+                        map.fitBounds([
+                            [-125, 24], // Southwest corner
+                            [-66.5, 49] // Northeast corner
+                        ], {
+                            padding: 20
+                        });
                     });
                 });
             },
