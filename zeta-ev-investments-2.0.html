@@ -48,11 +48,13 @@
 
     const legend = document.getElementById('legend');
     const colors = {
-      'Type A': '#ff0000',
-      'Type B': '#00ff00',
-      'Type C': '#0000ff',
-      'Type D': '#ff9900',
-        'Type E': '#ff9900'
+      'OEM': '#b21fc8',
+      'Minerals': '#000000',
+      'Battery Production': '#F4E158',
+      'Recycling': '#00D41E',
+        'Charging': '#71E5F5',
+           'Utility': '#679BFA',
+           'Other': '#F37325'
     };
 
     Object.keys(colors).forEach(type => {
@@ -93,15 +95,15 @@
               'circle-color': [
                 'match',
                 ['get', 'Type'],
-                'Battery Production', colors['Type A'],
-                'Charging', colors['Type B'],
-                'Minerals', colors['Type C'],
-                'Recycling', colors['Type D'],
-              'Utility', colors['Type E'],
-
-                '#ccc' // Default color
+                'OEM', colors['OEM'],
+                'Minerals', colors['Minerals'],
+                'Battery Production', colors['Battery Production'],
+                'Recycling', colors['Recycling'],
+                'Charging', colors['Charging'],
+                'Utility', colors['Utility'],
+                'Other', colors['Other']
               ],
-              'circle-opacity': 0.8
+              'circle-opacity': 0.65
             }
           });
 
