@@ -17,17 +17,17 @@
             bottom: 0;
             width: 100%;
         }
-        
+
         .popup h3 {
             font-size: 14px;
             margin-bottom: 5px;
         }
-        
+
         .popup p {
             font-size: 12px;
             margin: 0px;
         }
-        
+
         #legend {
             background: white;
             padding: 10px;
@@ -49,9 +49,12 @@
 
     <script>
         mapboxgl.accessToken = 'pk.eyJ1IjoiZGdwbHVzZGVzaWduIiwiYSI6ImNsZTF2bmZnbzBoeGkzb28yOW5kemF0ZHEifQ.wcLBXkbgle9WkYCnzSM8Cw';
+
         const map = new mapboxgl.Map({
             container: 'map',
-            style: 'mapbox://styles/mapbox/light-v11'
+            style: 'mapbox://styles/mapbox/light-v11',
+            center: [-98.5795, 39.8283],
+            zoom: 4
         });
 
         const legend = document.getElementById('legend');
@@ -72,96 +75,101 @@
             legend.appendChild(legendItem);
         });
 
-        $.ajax({
-            type: "GET",
-            url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQlH-qVkT59Xm2bRVXRNxOqB4Z0jOMq-i7n8vfE-VB0bHGa-Ims-Y0o96Qs5YXL-FRIEOiB4X9Ncc8_/pub?gid=447959767&single=true&output=csv',
-            dataType: "text",
-            success: function(csvData) {
-                csv2geojson.csv2geojson(csvData, {
-                    latfield: 'lat',
-                    lonfield: 'lon',
-                    delimiter: ','
-                }, function(err, data) {
-                    map.addSource('csvData', {
-                        type: 'geojson',
-                        data: data
-                    });
-
-                    // Convert TotalInvestmentAmount to a number
-                    geojson.features.forEach(feature => {
-                        if (feature.properties.TotalInvestmentAmount) {
-                            feature.properties.TotalInvestmentAmount = Number(feature.properties.TotalInvestmentAmount);
-                        } else {
-                            feature.properties.TotalInvestmentAmount = 0; // Default to 0 if the field is missing or invalid
+        map.on('load', function () {
+            $.ajax({
+                type: "GET",
+                url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQlH-qVkT59Xm2bRVXRNxOqB4Z0jOMq-i7n8vfE-VB0bHGa-Ims-Y0o96Qs5YXL-FRIEOiB4X9Ncc8_/pub?gid=447959767&single=true&output=csv',
+                dataType: "text",
+                success: function (csvData) {
+                    csv2geojson.csv2geojson(csvData, {
+                        latfield: 'lat', // Ensure these match the CSV column headers
+                        lonfield: 'lon', // Ensure these match the CSV column headers
+                        delimiter: ','
+                    }, function (err, geojson) {
+                        if (err) {
+                            console.error("Error in GeoJSON conversion:", err);
+                            return;
                         }
-                    });
 
-                    map.addLayer({
-                        id: 'csvData',
-                        type: 'circle',
-                        source: 'csvData',
-                        paint: {
-                            'circle-radius': [
-                                'interpolate', ['exponential', 1.5], // Exponential scaling for smoother transitions
-                                ['get', 'TotalInvestmentAmount'],
-                                0, 3, // Smallest circles for zero or very small investments
-                                100000, 6, // Medium size for moderate investments
-                                1000000, 12, // Larger circles for investments in the millions
-                                5000000, 20, // Maximum size for largest investments
-                                10000000, 30 // Extra-large investments
-                            ],
-                            'circle-color': [
-                                'match', ['get', 'Type'],
-                                'OEM', colors['OEM'],
-                                'Minerals', colors['Minerals'],
-                                'Battery Production', colors['Battery Production'],
-                                'Recycling', colors['Recycling'],
-                                'Charging', colors['Charging'],
-                                'Utility', colors['Utility'],
-                                'Other', colors['Other'],
-                                '#CCCCCC' // Default color
-                            ],
-                            'circle-opacity': 0.65
-                        }
-                    });
+                        // Convert TotalInvestmentAmount to a number
+                        geojson.features.forEach(feature => {
+                            feature.properties.TotalInvestmentAmount = Number(feature.properties.TotalInvestmentAmount) || 0;
+                        });
 
-                    // Add interaction for popups
-                    map.on('click', 'csvData', function(e) {
-                        const coordinates = e.features[0].geometry.coordinates.slice();
-                        const properties = e.features[0].properties;
-                        const description = `<div class=popup><h3>${properties.Company}</h3>
-              <p>Type: ${properties.Type}</p>
-              <p>${properties.InvestmentText}</p>
-                        <p>${properties.Jobs}</p>
-<p><a target="_blank" href="${properties.AnnouncementLink}">Source</a></p></div>`;
+                        map.addSource('csvData', {
+                            type: 'geojson',
+                            data: geojson
+                        });
 
-                        new mapboxgl.Popup()
-                            .setLngLat(coordinates)
-                            .setHTML(description)
-                            .addTo(map);
-                    });
+                        map.addLayer({
+                            id: 'csvData',
+                            type: 'circle',
+                            source: 'csvData',
+                            paint: {
+                                'circle-radius': [
+                                    'interpolate', ['exponential', 1.5],
+                                    ['get', 'TotalInvestmentAmount'],
+                                    0, 3,
+                                    100000, 6,
+                                    1000000, 12,
+                                    5000000, 20,
+                                    10000000, 30
+                                ],
+                                'circle-color': [
+                                    'match', ['get', 'Type'],
+                                    'OEM', colors['OEM'],
+                                    'Minerals', colors['Minerals'],
+                                    'Battery Production', colors['Battery Production'],
+                                    'Recycling', colors['Recycling'],
+                                    'Charging', colors['Charging'],
+                                    'Utility', colors['Utility'],
+                                    'Other', colors['Other'],
+                                    '#CCCCCC'
+                                ],
+                                'circle-opacity': 0.65
+                            }
+                        });
 
-                    // Change cursor to pointer on hover
-                    map.on('mouseenter', 'csvData', function() {
-                        map.getCanvas().style.cursor = 'pointer';
-                    });
+                        // Add interaction for popups
+                        map.on('click', 'csvData', function (e) {
+                            const coordinates = e.features[0].geometry.coordinates.slice();
+                            const properties = e.features[0].properties;
+                            const description = `<div class="popup">
+                                <h3>${properties.Company || 'Unknown Company'}</h3>
+                                <p>Type: ${properties.Type || 'Unknown'}</p>
+                                <p>${properties.InvestmentText || 'No details available'}</p>
+                                <p>${properties.Jobs || 'No job data available'}</p>
+                                <p><a target="_blank" href="${properties.AnnouncementLink || '#'}">Source</a></p>
+                            </div>`;
 
-                    map.on('mouseleave', 'csvData', function() {
-                        map.getCanvas().style.cursor = '';
-                    });
-                    map.on('load', function() {
+                            new mapboxgl.Popup()
+                                .setLngLat(coordinates)
+                                .setHTML(description)
+                                .addTo(map);
+                        });
+
+                        // Cursor interactions
+                        map.on('mouseenter', 'csvData', function () {
+                            map.getCanvas().style.cursor = 'pointer';
+                        });
+
+                        map.on('mouseleave', 'csvData', function () {
+                            map.getCanvas().style.cursor = '';
+                        });
+
+                        // Fit bounds to continental U.S.
                         map.fitBounds([
-                            [-125, 24], // Southwest corner
-                            [-66.5, 49] // Northeast corner
+                            [-125, 24],
+                            [-66.5, 49]
                         ], {
                             padding: 20
                         });
                     });
-                });
-            },
-            error: function(error) {
-                console.error("Error loading CSV:", error);
-            }
+                },
+                error: function (error) {
+                    console.error("Error loading CSV:", error);
+                }
+            });
         });
     </script>
 </body>
