@@ -1,0 +1,67 @@
+<html>
+  <link href="https://cdn.datatables.net/v/dt/dt-1.13.7/datatables.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-csv/0.8.9/jquery.csv.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.19/js/jquery.dataTables.min.js" defer></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js" type="text/javascript"></script>
+  <script
+  type="text/javascript">WebFont.load({google: {families: ["Montserrat:100,100italic,200,200italic,300,300italic,400,400italic,500,500italic,600,600italic,700,700italic,800,800italic,900,900italic", "Inter:300,regular,500,600,700,800", "Poppins:200,200italic,300,300italic,regular,italic,500,500italic,600,700,800,900", "Roboto:300,regular,italic,700"]}});</script>
+
+  <style>
+    .dataTables_wrapper {
+      font-family: Roboto, sans-serif;
+      font-size: 13px;
+    }
+
+    table {
+      font-family: Roboto, sans-serif;
+      font-size: 13px;
+    }
+  </style>
+
+  <table class="display compact"></table>
+
+  <script>
+    (function () {
+      "use strict";
+
+      $(document).ready(function () {
+        var columns = [
+          { title: "Office", width: "30%" },
+          { title: "Follow-up Meeting Request", width: "30%" },
+          { title: "Last Met *MOC", width: "20%" },
+          { title: "Staffer", width: "20%" },
+
+          // Add more columns as per your sheet structure
+        ];
+
+        $.ajax({
+          type: "GET",
+          url: "https://sheets.googleapis.com/v4/spreadsheets/13sYKKv5Khetv8KBM5bzq78tC6m9det2VZBar6Yo4Qx8/values/Sheet1?alt=json&key=AIzaSyC9FlzLyZLHzzsIEWfxKDPH_3Z6CqnmV8U",
+          success: function (data) {
+            var tableData = data.values.slice();
+            tableData.shift(); // Remove headers from data
+            console.log(tableData);
+
+            $("table").DataTable({
+              order: [],
+              data: tableData,
+              columns: columns,
+              columnDefs: [
+                {
+                  targets: 1,
+                  "render": function (data, type, full, meta) {
+                    return '<a href="' + data + '" target="_blank">' + data + '</a>';
+                  },
+                }
+              ],
+            });
+          },
+          error: function (error) {
+            console.error("Error fetching Google Sheets data:", error);
+          },
+        });
+      });
+    })();
+  </script>
+</html>
