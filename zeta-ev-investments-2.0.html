@@ -20,7 +20,7 @@
             width: 100%;
         }
 
-        .popup h3 {
+        .map_popup h3 {
             font-family: Roboto, sans-serif;
             font-weight: 600;
             font-size: 16px;
@@ -28,7 +28,7 @@
             margin-top: 0px;
         }
 
-        .popup p {
+        .map_popup p {
             font-family: Roboto, sans-serif;
             font-size: 14px;
             margin: 0px;
@@ -122,7 +122,7 @@
                         map.on('click', 'csvData', function (e) {
                             const coordinates = e.features[0].geometry.coordinates.slice();
                             const properties = e.features[0].properties;
-                            const description = `<div class="popup">
+                            const description = `<div class="map_popup">
                                 <h3>${properties.Company || 'Unknown Company'}</h3>
                                 <p>Type: ${properties.Type || 'Unknown'}</p>
                                 <p>${properties.InvestmentText || 'No details available'}</p>
