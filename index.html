@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EVs vs Gas Calculator</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="calculator-container">
+      <!-- Left Section - Calculator -->
+      <div class="calculator-section">
+        <h1>EVs vs Gas Calculator</h1>
+        <p class="description">
+          Both the 2025 Chevrolet Equinox EV and gas-powered 2025 Chevrolet Equinox have four doors, seat five passengers, and feature an 11-inch infotainment display. But despite the similarities, their operating costs can be very different: In Washington state, owning the Equinox EV will provide an annual savings of $1,236. 
+
+
+        </p>
+        <p class="sub-description">
+          This tool uses the electricity rates and average gas prices in all 50 U.S. states to calculate a per-mile cost for 31 gas-powered vehicles and 22 electric vehicles released in 2024-25. It allows users to make an apples-to-apples comparison of the costs to operate an EV or a related gas vehicle.  
+
+                  </p>
+        <p class="sub-description">
+          By providing an annual mileage estimate, users can see how operating
+          costs will add up for one month, or up to 15 years after purchase.
+                  </p>
+
+        <div class="form-group">
+          <label>SELECT A STATE</label>
+          <div class="custom-select">
+            <select id="stateSelect">
+              <option value="">Select a state</option>
+            </select>
+          </div>
+        </div>
+
+        <hr class="divider" />
+
+        <div class="form-group">
+          <label>SELECT AN ELECTRIC VEHICLE</label>
+          <div class="custom-select">
+            <select id="evSelect">
+              <option value="">Select an EV</option>
+            </select>
+          </div>
+        </div>
+
+        <hr class="divider" />
+
+        <div class="form-group">
+          <label>SELECT A GAS VEHICLE</label>
+          <div class="custom-select">
+            <select id="gasSelect">
+              <option value="">Select a gas vehicle</option>
+            </select>
+          </div>
+        </div>
+
+        <hr class="divider" />
+
+        <div class="form-group">
+          <label>SELECT ANNUAL MILES</label>
+          <div class="range-slider">
+            <input
+              type="range"
+              min="1000"
+              max="50000"
+              value="29000"
+              class="slider"
+              step="1000"
+              id="milesRange"
+            />
+            <div class="range-value">29K</div>
+            <div class="range-labels">
+              <span>1k</span>
+              <span>10k</span>
+              <span>20k</span>
+              <span>30k</span>
+              <span>40k</span>
+              <span>50k</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Section - Results -->
+      <div class="results-section">
+        <div class="results-header">
+          <h2>Results</h2>
+        </div>
+
+        <div class="results-content">
+          <div class="savings-summary">
+            <p class="savings-text">
+              On average, you would save
+              <span class="highlight savings-mile-text">$0.03 per mile</span> or
+              <span class="highlight savings-year-text">$277.98 per year</span> with the <span class="ev-model-name"></span>.
+            </p>
+          </div>
+
+          <div class="comparison-table">
+            <table>
+              <tr>
+                <th></th>
+                <th class="val-1 ev-model-name">Ford F-150 Lightning 4WD</th>
+                <th class="val-1 gas-model-name">Ford F-150 4WD</th>
+              </tr>
+              <tr>
+                <td class="left">Cost / kWh</td>
+                <td class="val-1 ev-cost-per-kwh">$0.25</td>
+                <td class="val-1 gas-cost-per-kwh">N/A</td>
+              </tr>
+              <tr>
+                <td class="left">Cost / gallon</td>
+                <td class="val-1 ev-cost-per-gallon">N/A</td>
+                <td class="val-1 gas-cost-per-gallon">$3.14</td>
+              </tr>
+              <tr>
+                <td class="left">Efficiency</td>
+                <td class="val-1 ev-efficiency">49</td>
+                <td class="val-1 gas-efficiency">5</td>
+              </tr>
+              <tr>
+                <td class="left">Cost / 100 Miles</td>
+                <td class="val-1 ev-cost-per-100-miles">$12.240</td>
+                <td class="val-1 gas-cost-per-100-miles">$15.72</td>
+              </tr>
+              <tr>
+                <td class="left">Total Cost / Mile</td>
+                <td class="val-1 ev-total-cost-per-mile">$0.122</td>
+                <td class="val-1 gas-total-cost-per-mile">$0.157</td>
+              </tr>
+              <tr>
+                <td class="left">Total Annual Cost</td>
+                <td class="val-1 ev-total-annual-cost">$979</td>
+                <td class="val-1 gas-total-annual-cost">$1,257</td>
+              </tr>
+              <tr class="savings-row">
+                <td class="left">Annual Savings ($)</td>
+                <td class="val-1 ev-annual-savings">$277.98</td>
+                <td class="val-1 gas-annual-savings">No Savings</td>
+              </tr>
+              <tr class="savings-row">
+                <td class="left">Annual Savings (%)</td>
+                <td class="val-1 ev-annual-savings-percentage">22.11%</td>
+                <td class="val-1 gas-annual-savings-percentage">No Savings</td>
+              </tr>
+              <tr class="savings-row">
+                <td class="left">Monthly Savings ($)</td>
+                <td class="val-1 ev-monthly-savings">$23.17</td>
+                <td class="val-1 gas-monthly-savings">No Savings</td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="graph-section">
+            <h3>Cumulative Cost of Ownership by Year (Dollars)</h3>
+            <div class="graph-container">
+              <canvas id="costChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="map-container">
+      <div class="map-section">
+        <div class="map-header">
+          <h2>Your Results Across the U.S.</h2>
+        </div>
+        <div class="map-container">
+          <div id="us-map"></div>
+          <div>
+            <div id="legend-range" class="horizontal-legend">
+              <span class="legend-label">$51</span>
+              <div class="legend-gradient">
+                <div class="color-box" style="background-color: #eef8e6;"></div>
+                <div class="color-box" style="background-color: #d6efd6;"></div>
+                <div class="color-box" style="background-color: #bfe6c5;"></div>
+                <div class="color-box" style="background-color: #a7ddb4;"></div>
+                <div class="color-box" style="background-color: #8fd4a3;"></div>
+                <div class="color-box" style="background-color: #78cb93;"></div>
+                <div class="color-box" style="background-color: #60c282;"></div>
+                <div class="color-box" style="background-color: #47b970;"></div>
+              </div>
+              <span class="legend-label">$226+</span>
+            </div>
+            
+          </div>
+          <div id="state-popover" class="state-popover">
+            <h3 class="state-name">Oregon</h3>
+            <div class="popover-content">
+              <div class="cost-row">
+                <span>Cost / Mile (EV)</span>
+                <span class="value ev-cost">$X.XX</span>
+              </div>
+              <div class="cost-row">
+                <span>Total Cost / Mile (Gas)</span>
+                <span class="value gas-cost">$X.XX</span>
+              </div>
+              <div class="cost-row">
+                <span>Total Annual Cost (EV)</span>
+                <span class="value ev-annual">$XXXXX</span>
+              </div>
+              <div class="cost-row">
+                <span>Total Annual Cost (Gas)</span>
+                <span class="value gas-annual">$XXXXX</span>
+              </div>
+              <div class="cost-row highlight">
+                <span>Annual Savings $ (EV)</span>
+                <span class="value savings">$XXXXX</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="map-footer">
+          <p class="source-text">
+            Source data for <a href="#" class="source-link">unleaded gasoline</a> and
+            electricity pricing. This data is updated on the 10th of each month.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="operating-costs">
+      <div class="operating-costs-container">
+        <!-- Left Column -->
+        <div class="operating-costs">
+          <div class="operating-costs-left-text">
+            <h2>EVs make sense across the country.</h2>
+            <p>
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+              eiusmod tempor incididunt ut labore et dolore magna aliqua.
+            </p>
+            <p>
+              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+              nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
+              reprehenderit in voluptate velit esse cillum dolore eu fugiat
+              nulla pariatur. Excepteur sint occaecat cupidatat non proident,
+              sunt in culpa qui officia deserunt mollit anim id est laborum.
+            </p>
+            
+          </div>
+          <div class="operating-costs-stats">
+            <div class="stat-value">146,000</div>
+            <div class="stat-label">
+              EV Industry Jobs Across the United States
+            </div>
+            <div class="clear-float"></div>
+            <div class="stat-value">$130</div>
+            <div class="stat-label">
+              Average Monthly Savings By Switching to an EV
+            </div>
+            <div class="clear-float"></div>
+            <div class="stat-value">$0.15</div>
+            <div class="stat-label">
+              Cost to Charge an EV Per Gallon Equivalent.
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div style="margin-bottom: 2rem">
+            <label for="vehicleClassSelect"
+              >SELECT A VEHICLE CLASS TO COMPARE</label
+            >
+            <div class="custom-select operating-costs-select">
+              <select id="vehicleClassSelect">
+                <option value="Mid-Size Sedan" selected>Mid-Size Sedan</option>
+                <option value="Full-Size Pickup">Full-Size Pickup</option>
+                <option value="Full-Size SUV">Full-Size SUV</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="operating-costs-right">
+          <div class="operating-costs-card">
+            <div class="operating-costs-card-header">
+              Mid-Size Sedan Average Operating Costs
+            </div>
+            <div class="operating-costs-card-content">
+              <!-- Table -->
+              <div class="operating-costs-table-section">
+                <div class="section-title">COST COMPARISON</div>
+                <table class="operating-costs-table">
+                  <tr>
+                    <th class="bg-white"  ></th>
+                    <th class="val-2 bg-white ev-operating-model-name">Tesla Model 3 SR</th>
+                    <th class="val-2 bg-white gas-operating-model-name">Honda Civic</th>
+                  </tr>
+                  <tr>
+                    <td class="table-label">Cost / kWh</td>
+                    <td class="val-2 ev-operating-cost-per-kwh">$0.25</td>
+                    <td class="val-2 gas-operating-cost-per-kwh">N/A</td>
+                  </tr>
+                  <tr>
+                    <td class="table-label">Cost / gallon</td>
+                    <td class="val-2 ev-operating-cost-per-gallon">N/A</td>
+                    <td class="val-2 gas-operating-cost-per-gallon">$3.14</td>
+                  </tr>
+                  <tr>
+                    <td class="table-label">Efficiency</td>
+                    <td class="val-2 ev-operating-efficiency">49</td>
+                    <td class="val-2 gas-operating-efficiency">5</td>
+                  </tr>
+                  <tr>
+                    <td class="table-label">Cost / 100 Miles</td>
+                    <td class="val-2 ev-operating-cost-per-100-miles">$12.240</td>
+                    <td class="val-2 gas-operating-cost-per-100-miles">$15.72</td>
+                  </tr>
+                  <tr>
+                    <td class="table-label">Total Cost / Mile</td>
+                    <td class="val-2 ev-operating-total-cost-per-mile">$0.122</td>
+                    <td class="val-2 gas-operating-total-cost-per-mile">$0.157</td>
+                  </tr>
+                  <tr>
+                    <td class="table-label">Total Annual Cost</td>
+                    <td class="val-2 ev-operating-total-annual-cost">$979</td>
+                    <td class="val-2 gas-operating-total-annual-cost">$1,257</td>
+                  </tr>
+                  <tr class="savings-row">
+                    <td class="table-label">Annual Savings ($)</td>
+                    <td class="val-2 ev-operating-annual-savings">$277.98</td>
+                    <td class="val-2 gas-operating-annual-savings">No Savings</td>
+                  </tr>
+                  <tr class="savings-row">
+                    <td class="table-label">Annual Savings (%)</td>
+                    <td class="val-2 ev-operating-annual-savings-percentage">22.11%</td>
+                    <td class="val-2 gas-operating-annual-savings-percentage">No Savings</td>
+                  </tr>
+                  <tr class="savings-row">
+                    <td class="table-label">Monthly Savings ($)</td>
+                    <td class="val-2 ev-operating-monthly-savings">$23.17</td>
+                    <td class="val-2 gas-operating-monthly-savings">No Savings</td>
+                  </tr>
+                </table>
+              </div>
+              <!-- Bar Chart -->
+              <div class="operating-costs-bar-section">
+                <div class="section-title left">COST PER MILE</div>
+                <div class="operating-costs-bar-chart improved">
+                  <!-- Honda Civic Bar -->
+                  <div class="operating-costs-bar">
+                    <div class="operating-costs-bar-value improved">$0.122</div>
+                    <div class="operating-costs-bar-rect honda improved"></div>
+                    <div class="operating-costs-bar-label improved">
+                      Honda Civic
+                    </div>
+                  </div>
+                  <!-- Tesla Model 3 Bar -->
+                  <div class="operating-costs-bar">
+                    <div class="operating-costs-bar-value improved">$0.030</div>
+                    <div class="operating-costs-bar-rect tesla improved"></div>
+                    <div class="operating-costs-bar-label improved">
+                      Tesla Model 3<br />(Standard Range)
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/topojson@3"></script>
+    <script src="functions.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
