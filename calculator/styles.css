@@ -4,7 +4,7 @@
   padding: 0;
   box-sizing: border-box;
 }
-/*
+
 body {
   font-family: 'Roboto', sans-serif;
   line-height: 1.6;
@@ -12,7 +12,7 @@ body {
   background-color: #2C2F33;
   padding: 2rem;
 }
-*/
+
 /* Calculator container */
 .calculator-container {
   max-width: 1300px;
