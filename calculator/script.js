@@ -72,7 +72,7 @@ $(document).ready(function () {
   evSelect.append('<option value="">Select an EV</option>')
 
   // Load and populate EV options
-  fetch('ElectricVehicles.json')
+  fetch('https://dgplus.github.io/zeta/calculator/ElectricVehicles.json')
     .then((response) => response.json())
     .then((evData) => {
       // Sort EVs by model name
@@ -99,7 +99,7 @@ $(document).ready(function () {
   gasSelect.append('<option value="">Select a gas vehicle</option>')
 
   // Load and populate gas vehicle options
-  fetch('GasVehicles.json')
+  fetch('https://dgplus.github.io/zeta/calculator/GasVehicles.json')
     .then((response) => response.json())
     .then((gasData) => {
       // Sort gas vehicles by model name

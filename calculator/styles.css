@@ -772,7 +772,7 @@ select#stateSelect,
 select#evSelect,
 select#gasSelect,
 select#vehicleClassSelect {
-  background: #fff url(Vector.png) no-repeat !important;
+  background: #fff url(https://dgplus.github.io/zeta/calculator/Vector.png) no-repeat !important;
   background-position: 95% 50% !important;
 }
 table td {
