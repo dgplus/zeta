@@ -9,9 +9,7 @@
 .calculator-container {
   font-family: 'Roboto', sans-serif;
   color: white;
-
-  padding: 2rem;
-    line-height: 1.6;
+  line-height: 1.6;
   background-color: #2C2F33;
   max-width: 1300px;
   margin: 0 auto;
