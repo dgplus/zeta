@@ -16,7 +16,7 @@ function initUSMap() {
     renderMap(stateChart);
   } else {
     // Load data from StateResults.json as fallback
-    d3.json('StateResults.json').then((data) => {
+    d3.json('https://dgplus.github.io/zeta/calculator/StateResults.json').then((data) => {
       data.forEach((state) => {
         stateChart.push(state);
       });
@@ -193,7 +193,7 @@ function initCostChart() {
           label: 'Electric Vehicle',
           data: [], // Will be populated with real data
           borderColor: 'yellow',
-          backgroundColor: 'rgba(254, 240, 151, 0.3)',
+          backgroundColor: 'rgba(246, 217, 250, 0.07)',
           fill: true,
           tension: 0.5,
           borderWidth: 2,
@@ -249,7 +249,7 @@ function initCostChart() {
           display: true,
           title: {
             display: true,
-            text: '',
+            text: 'Years',
             font: {
               family: 'Open Sans',
               size: 14,
@@ -273,7 +273,7 @@ function initCostChart() {
           display: true,
           title: {
             display: true,
-            text: '',
+            text: 'Cumulative Cost ($)',
             font: {
               family: 'Open Sans',
               size: 14, 
@@ -319,18 +319,14 @@ async function calculateSavings(milesRange) {
   
 
 
-  $('.text-ev').text(ev)
-  $('.text-gas').text(gas)
-
-
   $('.ev-model-name').text(ev)
   $('.gas-model-name').text(gas)
   $('.gas-cost-per-kwh').text('N/A')
 
   //load values from json file    
 
-  const electricityPrices = d3.json('ElectricityPricesEIA.json')
-  const gasPrices = d3.json('GasPricesAAA.json')
+  const electricityPrices = d3.json('https://dgplus.github.io/zeta/calculator/ElectricityPricesEIA.json')
+  const gasPrices = d3.json('https://dgplus.github.io/zeta/calculator/GasPricesAAA.json')
 
   electricityPrices.then((data) => {
     costPerKwh = data.find((d) => d.state === state).price
@@ -340,7 +336,7 @@ async function calculateSavings(milesRange) {
       $('.ev-cost-per-kwh').text('$' + (costPerKwh / 100).toFixed(2))
     }
     $('.ev-cost-per-gallon').text('N/A')
-    const electricVehicles = d3.json('ElectricVehicles.json')
+    const electricVehicles = d3.json('https://dgplus.github.io/zeta/calculator/ElectricVehicles.json')
     electricVehicles.then((data) => {
       evEfficiency = data.find((d) => d.model === ev)['kwh/100miles']
       $('.ev-efficiency').text(evEfficiency)
@@ -358,7 +354,7 @@ async function calculateSavings(milesRange) {
         } else {
           $('.gas-cost-per-gallon').text('$' + costPerGallon)
         }
-        const gasVehicles = d3.json('GasVehicles.json')
+        const gasVehicles = d3.json('https://dgplus.github.io/zeta/calculator/GasVehicles.json')
         gasVehicles.then((data) => {
           gasEfficiency = data.find((d) => d.model === gas)[
             'efficiency(gal/100miles)'
@@ -412,14 +408,14 @@ async function calculateSavings(milesRange) {
     
     
           } else {
-            $('.ev-annual-savings').text('N/A')
+            $('.ev-annual-savings').text('No Savings')
           }
     
           if (evTotalAnnualCost - gasTotalAnnualCost > 0) {
             gasAnnualSavings = evTotalAnnualCost - gasTotalAnnualCost
             $('.gas-annual-savings').text('$' + (gasAnnualSavings.toFixed(2)).toLocaleString())
           } else {
-            $('.gas-annual-savings').text('N/A')
+            $('.gas-annual-savings').text('No Savings')
           }
     
           // Calculate savings percentages
@@ -430,7 +426,7 @@ async function calculateSavings(milesRange) {
               evAnnualSavingsPercentage.toFixed(2) + '%'
             )
           } else {
-            $('.ev-annual-savings-percentage').text('N/A')
+            $('.ev-annual-savings-percentage').text('No Savings')
           }
     
           if (gasAnnualSavings > 0) {
@@ -440,7 +436,7 @@ async function calculateSavings(milesRange) {
               gasAnnualSavingsPercentage.toFixed(2) + '%'
             )
           } else {
-            $('.gas-annual-savings-percentage').text('N/A')
+            $('.gas-annual-savings-percentage').text('No Savings')
           }
     
           // Calculate monthly savings
@@ -456,7 +452,7 @@ async function calculateSavings(milesRange) {
           if (gasMonthlySavings > 0) {
             $('.gas-monthly-savings').text('$' + gasMonthlySavings.toFixed(2))
           } else {
-            $('.gas-monthly-savings').text('N/A')
+            $('.gas-monthly-savings').text('No Savings')
           }
         })
 
@@ -509,8 +505,8 @@ async function calculateOperatingCosts(vehicleClass) {
   )
 
   // find using class the object in the electricVehicles.json file that has the vehicleClass that matches the vehicleClassSelect value
-  const electricVehicles = d3.json('ElectricVehicles.json')
-  const gasVehicles = d3.json('GasVehicles.json')
+  const electricVehicles = d3.json('https://dgplus.github.io/zeta/calculator/ElectricVehicles.json')
+  const gasVehicles = d3.json('https://dgplus.github.io/zeta/calculator/GasVehicles.json')
 
   electricVehicles.then((data) => {
     //loop through the data and find the object that has the vehicleClass that matches the vehicleClassSelect value
@@ -560,13 +556,13 @@ async function calculateOperatingCosts(vehicleClass) {
               // comparison of ev and gas
               let evAnnualSavings = gasTotalAnnualCost - evTotalAnnualCost
 
-              //if((gasTotalAnnualCost-evTotalAnnualCost)>0,(gasTotalAnnualCost-evTotalAnnualCost),"N/A")
+              //if((gasTotalAnnualCost-evTotalAnnualCost)>0,(gasTotalAnnualCost-evTotalAnnualCost),"No Savings")
               if (evAnnualSavings > 0) {
                 jQuery('.ev-operating-annual-savings').text(
                   '$' + evAnnualSavings.toFixed(2)
                 )
               } else {
-                jQuery('.ev-operating-annual-savings').text('N/A')
+                jQuery('.ev-operating-annual-savings').text('No Savings')
               }
 
               let gasAnnualSavings = evTotalAnnualCost - gasTotalAnnualCost
@@ -575,7 +571,7 @@ async function calculateOperatingCosts(vehicleClass) {
                   '$' + gasAnnualSavings.toFixed(2)
                 )
               } else {
-                jQuery('.gas-operating-annual-savings').text('N/A')
+                jQuery('.gas-operating-annual-savings').text('No Savings')
               }
 
               // ev-operating-annual-savings-percentage
@@ -590,7 +586,7 @@ async function calculateOperatingCosts(vehicleClass) {
                 )
               } else {
                 jQuery('.ev-operating-annual-savings-percentage').text(
-                  'N/A'
+                  'No Savings'
                 )
               }
 
@@ -603,7 +599,7 @@ async function calculateOperatingCosts(vehicleClass) {
                 )
               } else {
                 jQuery('.gas-operating-annual-savings-percentage').text(
-                  'N/A'
+                  'No Savings'
                 )
               }
 
@@ -614,7 +610,7 @@ async function calculateOperatingCosts(vehicleClass) {
                   '$' + evMonthlySavings.toFixed(2)
                 )
               } else {
-                jQuery('.ev-operating-monthly-savings').text('N/A')
+                jQuery('.ev-operating-monthly-savings').text('No Savings')
               }
 
               let gasMonthlySavings = gasAnnualSavings / 12
@@ -623,7 +619,7 @@ async function calculateOperatingCosts(vehicleClass) {
                   '$' + gasMonthlySavings.toFixed(2)
                 )
               } else {
-                jQuery('.gas-operating-monthly-savings').text('N/A')
+                jQuery('.gas-operating-monthly-savings').text('No Savings')
               }
 
               // remove $ sign and convert to number
@@ -687,10 +683,10 @@ async function mapChart(states) {
   // Load all necessary data first
   try {
     const [electricityData, evData, gasPriceData, gasVehicleData] = await Promise.all([
-      d3.json('ElectricityPricesEIA.json'),
-      d3.json('ElectricVehicles.json'),
-      d3.json('GasPricesAAA.json'),
-      d3.json('GasVehicles.json')
+      d3.json('https://dgplus.github.io/zeta/calculator/ElectricityPricesEIA.json'),
+      d3.json('https://dgplus.github.io/zeta/calculator/ElectricVehicles.json'),
+      d3.json('https://dgplus.github.io/zeta/calculator/GasPricesAAA.json'),
+      d3.json('https://dgplus.github.io/zeta/calculator/GasVehicles.json')
     ]);
 
     // Get EV efficiency

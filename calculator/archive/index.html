@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>EVs vs Gas Calculator</title>
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="https://dgplus.github.io/zeta/calculator/styles.css" />
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -154,26 +154,26 @@
                 <td class="val-1 ev-total-annual-cost">$979</td>
                 <td class="val-1 gas-total-annual-cost">$1,257</td>
               </tr>
-              <tr class="savings-row"  style="display: none;">
+              <tr class="savings-row">
                 <td class="left">Annual Savings ($)</td>
                 <td class="val-1 ev-annual-savings">$277.98</td>
-                <td class="val-1 gas-annual-savings">N/A</td>
+                <td class="val-1 gas-annual-savings">No Savings</td>
               </tr>
               <tr class="savings-row">
                 <td class="left">Annual Savings (%)</td>
                 <td class="val-1 ev-annual-savings-percentage">22.11%</td>
-                <td class="val-1 gas-annual-savings-percentage">N/A</td>
+                <td class="val-1 gas-annual-savings-percentage">No Savings</td>
               </tr>
               <tr class="savings-row">
                 <td class="left">Monthly Savings ($)</td>
                 <td class="val-1 ev-monthly-savings">$23.17</td>
-                <td class="val-1 gas-monthly-savings">N/A</td>
+                <td class="val-1 gas-monthly-savings">No Savings</td>
               </tr>
             </table>
           </div>
 
           <div class="graph-section">
-            <h3>Charging vs. Fueling Costs by Year</h3>
+            <h3>Cumulative Cost of Ownership by Year (Dollars)</h3>
             <div class="graph-container">
               <canvas id="costChart"></canvas>
             </div>
@@ -221,7 +221,7 @@
         </div>
         <div class="map-container">
           <div>
-            <div class="key-words"><strong>Color Key:</strong><br/>Monthly fuel savings for <span class="text-ev">Ford F-150 Lightning 4WD</span> compared to <span class="text-gas">Ford F-150 2WD</span></p> 
+            <div class="key-words"><strong>Color Key:</strong><br/>Monthly fuel savings for [selected EV] compared to [selected gas vehicle]</p> 
               <div>
                 <div id="legend-range" >
                   <ul class="legend-gradient">
@@ -296,18 +296,18 @@
               <div class="div1">
 
                 <p class="operating-costs-card-text1">Mid-Size Sedan Average Operating Costs </p>
- <div class="operating-costs-card-text2 ">
-   <div class="midsize savings-text vehicle v1 hidden">
-     On average, you would save <span class="highlight highlight1">$662.55</span>	 per year with the <span class="vehicle-name">Tesla Model 3 SR.</span>
+ <div class="operating-costs-card-text2">
+   <div class="midsize savings-text vehicle v1">
+     On average, you would save <span class="highlight highlight1">$662.55</span>	 per year with the <span class="ev-model-name">Tesla Model 3 SR.</span>
      <br/>
      <img src="https://dgplus.github.io/zeta/calculator/sedan.png" alt="Tesla Model 3 SR" />
    </div>
    <div class="fullsize savings-text hidden vehicle v2">
-     On average, you would save <span class="highlight highlight1">$979.71</span>	 per year with the <span class="vehicle-name">Ford F-150 Lightning 4WD.</span>
+     On average, you would save <span class="highlight highlight1">$979.71</span>	 per year with the <span class="ev-model-name">Ford F-150 Lightning 4WD.</span>
      <br/><img src="https://dgplus.github.io/zeta/calculator/pickup.png" alt="Tesla Model 3 SR" />
    </div>
    <div class="fullsize-suv savings-text hidden vehicle v3">
-     On average, you would save <span class="highlight highlight1">$1069.35</span> per year with the <span class="vehicle-name">Rivian R1S Dual Standard.</span>
+     On average, you would save <span class="highlight highlight1">$1069.35</span> per year with the <span class="ev-model-name">Rivian R1S Dual Standard.</span>
      <br/> <img src="https://dgplus.github.io/zeta/calculator/suv.png" alt="Tesla Model 3 SR" />
    </div>
 
@@ -375,11 +375,11 @@
                        $1,257
                      </td>
                    </tr>
-                   <tr class="savings-row" style="display: none;">
+                   <tr class="savings-row">
                      <td class="table-label">Annual Savings ($)</td>
                      <td class="val-2 ev-operating-annual-savings">$277.98</td>
                      <td class="val-2 gas-operating-annual-savings">
-                      N/A
+                       No Savings
                      </td>
                    </tr>
                    <tr class="savings-row">
@@ -388,14 +388,14 @@
                        22.11%
                      </td>
                      <td class="val-2 gas-operating-annual-savings-percentage">
-                      N/A
+                       No Savings
                      </td>
                    </tr>
                    <tr class="savings-row">
                      <td class="table-label">Monthly Savings ($)</td>
                      <td class="val-2 ev-operating-monthly-savings">$23.17</td>
                      <td class="val-2 gas-operating-monthly-savings">
-                      N/A
+                       No Savings
                      </td>
                    </tr>
                  </table>

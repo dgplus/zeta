@@ -1,0 +1,178 @@
+[
+  {
+    "class": null,
+    "model": "BMW iX xDrive40",
+    "mpgecity": null,
+    "mpgehighway": null,
+    "mpgecombined": 87.0,
+    "kwh/100miles": 39
+  },
+  {
+    "class": null,
+    "model": "Chevrolet Bolt EV",
+    "mpgecity": null,
+    "mpgehighway": null,
+    "mpgecombined": null,
+    "kwh/100miles": 28
+  },
+  {
+    "class": null,
+    "model": "Chevrolet Equinox EV AWD",
+    "mpgecity": null,
+    "mpgehighway": null,
+    "mpgecombined": 103.0,
+    "kwh/100miles": 33
+  },
+  {
+    "class": null,
+    "model": "Chevrolet Silverado EV",
+    "mpgecity": null,
+    "mpgehighway": null,
+    "mpgecombined": 68.0,
+    "kwh/100miles": 50
+  },
+  {
+    "class": "Full-Size Pickup",
+    "model": "Ford F-150 Lightning 4WD",
+    "mpgecity": null,
+    "mpgehighway": null,
+    "mpgecombined": null,
+    "kwh/100miles": 49
+  },
+  {
+    "class": null,
+    "model": "GMC Sierra EV",
+    "mpgecity": null,
+    "mpgehighway": null,
+    "mpgecombined": 64.0,
+    "kwh/100miles": 52
+  },
+  {
+    "class": null,
+    "model": "Hyundai Ioniq 5 Standard",
+    "mpgecity": null,
+    "mpgehighway": null,
+    "mpgecombined": 115.0,
+    "kwh/100miles": 29
+  },
+  {
+    "class": null,
+    "model": "Hyundai Ioniq 6 Long Range RWD",
+    "mpgecity": null,
+    "mpgehighway": null,
+    "mpgecombined": null,
+    "kwh/100miles": 24
+  },
+  {
+    "class": null,
+    "model": "Hyundai Kona Electric",
+    "mpgecity": null,
+    "mpgehighway": null,
+    "mpgecombined": null,
+    "kwh/100miles": 27
+  },
+  {
+    "class": null,
+    "model": "Kia EV6 Long Range RWD",
+    "mpgecity": null,
+    "mpgehighway": null,
+    "mpgecombined": null,
+    "kwh/100miles": 28
+  },
+  {
+    "class": null,
+    "model": "Kia EV9 Standard",
+    "mpgecity": null,
+    "mpgehighway": null,
+    "mpgecombined": 88.0,
+    "kwh/100miles": 38
+  },
+  {
+    "class": null,
+    "model": "Kia Niro Electric",
+    "mpgecity": null,
+    "mpgehighway": null,
+    "mpgecombined": null,
+    "kwh/100miles": 29
+  },
+  {
+    "class": null,
+    "model": "Lucid Air Pure RWD",
+    "mpgecity": null,
+    "mpgehighway": null,
+    "mpgecombined": null,
+    "kwh/100miles": 23
+  },
+  {
+    "class": null,
+    "model": "Lucid Air Touring AWD",
+    "mpgecity": null,
+    "mpgehighway": null,
+    "mpgecombined": 132.0,
+    "kwh/100miles": 26
+  },
+  {
+    "class": null,
+    "model": "Mercedes-Benz EQS 580 4matic",
+    "mpgecity": null,
+    "mpgehighway": null,
+    "mpgecombined": 93.0,
+    "kwh/100miles": 36
+  },
+  {
+    "class": "Full-Size SUV",
+    "model": "Rivian R1S Dual Standard",
+    "mpgecity": null,
+    "mpgehighway": null,
+    "mpgecombined": 85.0,
+    "kwh/100miles": 40
+  },
+  {
+    "class": null,
+    "model": "Rivian R1T Dual Standard",
+    "mpgecity": null,
+    "mpgehighway": null,
+    "mpgecombined": 85.0,
+    "kwh/100miles": 40
+  },
+  {
+    "class": null,
+    "model": "Tesla Model 3 RWD",
+    "mpgecity": null,
+    "mpgehighway": null,
+    "mpgecombined": null,
+    "kwh/100miles": 25
+  },
+  {
+    "class": "Mid-Size Sedan",
+    "model": "Tesla Model 3 SR",
+    "mpgecity": null,
+    "mpgehighway": null,
+    "mpgecombined": null,
+    "kwh/100miles": 25
+  },
+  {
+    "class": null,
+    "model": "Tesla Model S",
+    "mpgecity": null,
+    "mpgehighway": null,
+    "mpgecombined": null,
+    "kwh/100miles": 28
+  },
+  {
+    "class": null,
+    "model": "Tesla Model Y",
+    "mpgecity": null,
+    "mpgehighway": null,
+    "mpgecombined": null,
+    "kwh/100miles": 28
+  },
+  {
+    "class": null,
+    "model": "Toyota bZ4X FWD",
+    "mpgecity": null,
+    "mpgehighway": null,
+    "mpgecombined": null,
+    "kwh/100miles": 28
+  }
+]
