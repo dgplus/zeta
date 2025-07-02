@@ -16,7 +16,7 @@ function initUSMap() {
     renderMap(stateChart);
   } else {
     // Load data from StateResults.json as fallback
-    d3.json('StateResults.json').then((data) => {
+    d3.json('https://dgplus.github.io/zeta/calculator/StateResults.json').then((data) => {
       data.forEach((state) => {
         stateChart.push(state);
       });
@@ -329,8 +329,8 @@ async function calculateSavings(milesRange) {
 
   //load values from json file    
 
-  const electricityPrices = d3.json('ElectricityPricesEIA.json')
-  const gasPrices = d3.json('GasPricesAAA.json')
+  const electricityPrices = d3.json('https://dgplus.github.io/zeta/calculator/ElectricityPricesEIA.json')
+  const gasPrices = d3.json('https://dgplus.github.io/zeta/calculator/GasPricesAAA.json')
 
   electricityPrices.then((data) => {
     costPerKwh = data.find((d) => d.state === state).price
@@ -340,7 +340,7 @@ async function calculateSavings(milesRange) {
       $('.ev-cost-per-kwh').text('$' + (costPerKwh / 100).toFixed(2))
     }
     $('.ev-cost-per-gallon').text('N/A')
-    const electricVehicles = d3.json('ElectricVehicles.json')
+    const electricVehicles = d3.json('https://dgplus.github.io/zeta/calculator/ElectricVehicles.json')
     electricVehicles.then((data) => {
       evEfficiency = data.find((d) => d.model === ev)['kwh/100miles']
       $('.ev-efficiency').text(evEfficiency)
@@ -358,7 +358,7 @@ async function calculateSavings(milesRange) {
         } else {
           $('.gas-cost-per-gallon').text('$' + costPerGallon)
         }
-        const gasVehicles = d3.json('GasVehicles.json')
+        const gasVehicles = d3.json('https://dgplus.github.io/zeta/calculator/GasVehicles.json')
         gasVehicles.then((data) => {
           gasEfficiency = data.find((d) => d.model === gas)[
             'efficiency(gal/100miles)'
@@ -509,8 +509,8 @@ async function calculateOperatingCosts(vehicleClass) {
   )
 
   // find using class the object in the electricVehicles.json file that has the vehicleClass that matches the vehicleClassSelect value
-  const electricVehicles = d3.json('ElectricVehicles.json')
-  const gasVehicles = d3.json('GasVehicles.json')
+  const electricVehicles = d3.json('https://dgplus.github.io/zeta/calculator/ElectricVehicles.json')
+  const gasVehicles = d3.json('https://dgplus.github.io/zeta/calculator/GasVehicles.json')
 
   electricVehicles.then((data) => {
     //loop through the data and find the object that has the vehicleClass that matches the vehicleClassSelect value
@@ -687,10 +687,10 @@ async function mapChart(states) {
   // Load all necessary data first
   try {
     const [electricityData, evData, gasPriceData, gasVehicleData] = await Promise.all([
-      d3.json('ElectricityPricesEIA.json'),
-      d3.json('ElectricVehicles.json'),
-      d3.json('GasPricesAAA.json'),
-      d3.json('GasVehicles.json')
+      d3.json('https://dgplus.github.io/zeta/calculator/ElectricityPricesEIA.json'),
+      d3.json('https://dgplus.github.io/zeta/calculator/ElectricVehicles.json'),
+      d3.json('https://dgplus.github.io/zeta/calculator/GasPricesAAA.json'),
+      d3.json('https://dgplus.github.io/zeta/calculator/GasVehicles.json')
     ]);
 
     // Get EV efficiency
