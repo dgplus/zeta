@@ -5,17 +5,14 @@
   box-sizing: border-box;
 }
 
-body {
-  font-family: 'Roboto', sans-serif;
+/* Calculator container */
+.calculator-container {
+   font-family: 'Roboto', sans-serif;
   line-height: 1.6;
   color: white;
   background-color: #2C2F33;
   padding: 2rem;
-}
-
-/* Calculator container */
-.calculator-container {
-  max-width: 1300px;
+    max-width: 1300px;
   margin: 0 auto;
   display: grid;
   grid-template-columns: 1fr 1fr;
