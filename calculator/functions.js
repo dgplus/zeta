@@ -253,7 +253,7 @@ function initCostChart() {
           display: true,
           title: {
             display: true,
-            text: '',
+            text: 'Years',
             font: {
               family: 'Open Sans',
               size: 14,
@@ -277,11 +277,7 @@ function initCostChart() {
           display: true,
           title: {
             display: true,
-<<<<<<< HEAD
             text: 'Savings',
-=======
-            text: '',
->>>>>>> 6f451485f614c4db51cc60c651ac29bdb9f6972d
             font: {
               family: 'Open Sans',
               size: 14, 
