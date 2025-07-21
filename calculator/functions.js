@@ -53,6 +53,7 @@ function initUSMap() {
           const savings = parseFloat(
             state['annualsavings$(ev)'].replace('$', '').replace(',', '')
           );
+          
 
           stateData[name] = {
             evCost: evCost,
@@ -89,29 +90,28 @@ function initUSMap() {
           .attr('class', 'state')
           .attr('d', path)
           .attr('fill', function (d) {
+
             // Get the state name from the ID
             const stateName = stateNames[d.id];
             const data = stateData[stateName]; 
-            const value = data?.savings/12
-            
-            if (value >= 51 && value <= 75) {
+            let value = data?.savings/12
+
+            if(value === null || value === undefined || value <= 0) {
+              return '#B8BABC';
+            }
+
+            value = (data?.savings.toFixed(2) / data?.gasAnnual.toFixed(2) * 100).toFixed(2)
+            console.log(value)
+            if (value >= 0 && value <= 20) {
               return '#FEF097';
-            } else if (value >= 76 && value <= 100) {
-              return '#FEF097';
-            } else if (value >= 101 && value <= 125) {
+            } else if (value >= 21 && value <= 40) {
               return '#B3C781';
-            } else if (value >= 126 && value <= 150) {
-              return '#B3C781';
-            } else if (value >= 151 && value <= 175) {
+            } else if (value >= 41 && value <= 60) {
               return '#689F6B';
-            } else if (value >= 176 && value <= 200) {
-              return '#689F6B';
-            } else if (value >= 201 && value <= 225) {
-              return '#477662';
-            } else if (value >= 226) {
+            } else if (value >= 61) {
               return '#477662';
             } else {
-              return '#477662'; // Default color for values below 51
+              return '#B8BABC'; // Default color for values below 51
             }
             
           })
@@ -150,11 +150,15 @@ function initUSMap() {
       popover.find('.ev-cost').text('$' + data.evCost.toFixed(2));
       popover.find('.gas-cost').text('$' + data.gasCost.toFixed(2));
       popover.find('.ev-annual').text('$' + data.evAnnual.toFixed(2).toLocaleString());
+      
       popover
         .find('.gas-annual')
         .text('$' + data.gasAnnual.toFixed(2).toLocaleString());
       popover.find('.savings').text('$' + data.savings.toFixed(2).toLocaleString());
       
+      let percentageSaving = (data.savings.toFixed(2) / data.gasAnnual.toFixed(2) * 100).toFixed(2)
+      popover.find('.annual-percentage-savings').text(percentageSaving)
+
       // Position popover above mouse
       const mapContainer = $('.map-container')[0].getBoundingClientRect();
       const left =
@@ -176,7 +180,7 @@ function initCostChart() {
   const costChart = new Chart(ctx, {
     type: 'line',
     data: {
-      labels: Array.from({length: 12}, (_, i) => `${i+1}`),
+      labels: Array.from({length: 10}, (_, i) => `${i+1}`),
       datasets: [
         {
           label: 'Gas Vehicle',
@@ -273,7 +277,11 @@ function initCostChart() {
           display: true,
           title: {
             display: true,
+<<<<<<< HEAD
+            text: 'Savings',
+=======
             text: '',
+>>>>>>> 6f451485f614c4db51cc60c651ac29bdb9f6972d
             font: {
               family: 'Open Sans',
               size: 14, 
@@ -388,8 +396,8 @@ async function calculateSavings(milesRange) {
           let gasMonthlyCost = gasTotalAnnualCost / 12
           
           // Create arrays for cumulative monthly costs
-          let evCumulativeCosts = Array.from({length: 12}, (_, i) => evMonthlyCost * (i + 1))
-          let gasCumulativeCosts = Array.from({length: 12}, (_, i) => gasMonthlyCost * (i + 1))
+          let evCumulativeCosts = Array.from({length: 10}, (_, i) => evMonthlyCost * 12* (i + 1))
+          let gasCumulativeCosts = Array.from({length: 10}, (_, i) => gasMonthlyCost * 12 * (i + 1))
           
           // Update chart data
           if (window.costChart) {
@@ -449,8 +457,17 @@ async function calculateSavings(milesRange) {
           let gasMonthlySavings = gasAnnualSavings / 12
     
           $('.ev-monthly-savings').text('$' + evMonthlySavings.toFixed(2))
+          $('.ev-10-year-savings').text('$' + (evMonthlySavings*12*10).toFixed(2))
+
           $('.savings-year-text').text('$' + (evMonthlySavings*12).toFixed(2)+' per year')
-          $('.savings-mile-text').text('$' + (gasTotalCostPerMile-evTotalCostPerMile).toFixed(2)+' per mile')
+          if((gasTotalCostPerMile-evTotalCostPerMile).toFixed(2) <= 0){
+            $('.savings-text-2').show()
+            $('.savings-text-fix').hide();
+          } else {
+            $('.savings-text-2').hide()
+            $('.savings-text-fix').show();
+            $('.savings-mile-text').text('$' + (gasTotalCostPerMile-evTotalCostPerMile).toFixed(2)+' per mile')
+          }
 
           // if the gas-monthly-savings is greater than 0 then show the gas-monthly-savings-percentage
           if (gasMonthlySavings > 0) {

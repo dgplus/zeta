@@ -768,7 +768,7 @@ select#stateSelect,
 select#evSelect,
 select#gasSelect,
 select#vehicleClassSelect {
-  background: #fff url(https://dgplus.github.io/zeta/calculator/Vector.png) no-repeat !important;
+  background: #fff url(Vector.png) no-repeat !important;
   background-position: 95% 50% !important;
 }
 table td {
@@ -967,12 +967,14 @@ ul.legend-gradient li {
 .operating-costs-bar-label.improved {
   height: 64px;
 }
-p.savings-text {
+p.savings-text,p.savings-text-2 {
   font-size: 36px;
   font-weight: 100;
   color: #EBEBEC;
 }
-
+p.savings-text-2 {
+  line-height: 1.2;
+}
 span.highlight.savings-mile-text,.highlight.highlight1 {
   font-weight: 700;
   color: #FEF097;
@@ -983,7 +985,7 @@ span.highlight.savings-year-text {
   color: #FEF097;
 }
 
-span.ev-model-name {
+span.ev-model-name, span.vehicle-name {
   font-weight: 700;
   color: #EBEBEC;
 }
