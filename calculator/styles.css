@@ -472,7 +472,8 @@ table td {
     height: 300px;
     margin-top: 0px;
     margin-bottom: 0px;
-  }.operating-costs-header-left {
+  }
+.operating-costs-header-left {
   flex-direction: column;
   padding: 0px;
   padding-bottom: 10px;
@@ -489,6 +490,7 @@ table td {
 .operating-costs-card-content {
   flex-direction: column;
   width: 100%;
+    line-height: 1.2;
 }
 
 .div1, .div2 {
@@ -1047,4 +1049,5 @@ section-title.left {
   display: none;
 }.savings-text.vehicle {
   text-align: left;
+    line-height: 1.2;
 }
