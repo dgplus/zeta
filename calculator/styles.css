@@ -935,8 +935,8 @@ th.val-1.gas-model-name {
   height: 20px;
   border: 1px solid #ccc;
 }
-.color-box li {
-    color: #fff;
+.legend-gradient li {
+    color: #fff !important;
 }
 div#legend-range {
   justify-content: left;
