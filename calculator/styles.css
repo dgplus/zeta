@@ -613,7 +613,7 @@ line-height: 143.5%;
   font-size: 36px;
   font-weight: 700;
   text-align: center;
-  margin-bottom: 10px;
+  margin-bottom: 20px;
 }
 .operating-costs-stats .stat-label {
   color: #EBEBEC;
@@ -935,8 +935,11 @@ th.val-1.gas-model-name {
   height: 20px;
   border: 1px solid #ccc;
 }
+.color-box li {
+    color: #fff;
+}
 div#legend-range {
-  justify-content: center;
+  justify-content: left;
   padding-top: 10px;
 }
 .legend-gradient {
