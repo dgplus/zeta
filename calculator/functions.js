@@ -101,17 +101,17 @@ function initUSMap() {
             }
 
             value = (data?.savings.toFixed(2) / data?.gasAnnual.toFixed(2) * 100).toFixed(2)
-            console.log(value)
+           
             if (value >= 0 && value <= 20) {
               return '#FEF097';
-            } else if (value >= 21 && value <= 40) {
+            } else if (value > 20 && value <= 40) {
               return '#B3C781';
-            } else if (value >= 41 && value <= 60) {
+            } else if (value > 40 && value <= 60) {
               return '#689F6B';
-            } else if (value >= 61) {
+            } else if (value > 60) {
               return '#477662';
             } else {
-              return '#B8BABC'; // Default color for values below 51
+              return '#B8BABC'; // Default color for negatives or invalid values
             }
             
           })
@@ -229,13 +229,18 @@ function initCostChart() {
         },
         tooltip: {
           callbacks: {
+            title: function (context) {
+              const currentYear = new Date().getFullYear()
+              const year = context[0].dataIndex + 1
+              return `Year ${year}`
+            },
             label: function (context) {
               let label = context.dataset.label || ''
               if (label) {
                 label += ': '
               }
               if (context.parsed.y !== null) {
-                label += '$' + context.parsed.y.toLocaleString()
+                label += '$' + Math.round(context.parsed.y).toLocaleString()
               }
               return label
             },
@@ -259,7 +264,7 @@ function initCostChart() {
               size: 14,
               weight: 600
             },
-            color: '#516381'
+            color: '#b0b0b0'
           },
           grid: {
             display: false,
@@ -283,7 +288,7 @@ function initCostChart() {
               size: 14, 
               weight: 600
             },
-            color: '#516381'
+            color: '#b0b0b0'
           },
           grid: {
             color: 'transparent',
