@@ -444,10 +444,14 @@ table td {
 @media (max-width: 768px) {
   .calculator-container {
     grid-template-columns: 1fr;
-    padding: .8rem;
+    margin: 1rem;
+    padding: 1rem;
   }
 
-  
+  body {
+    padding: 0rem;
+  }
+
   h1 {
     font-size: 2rem;
   }
