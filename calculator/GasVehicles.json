@@ -36,7 +36,7 @@
     "unnamed:9": null
   },
   {
-    "class": null,
+    "class": "Full-Size Pickup",
     "model": "Chevrolet Silverado 4WD",
     "unnamed:2": null,
     "mpgcity": 17,
@@ -84,7 +84,7 @@
     "unnamed:9": null
   },
   {
-    "class": "Full-Size Pickup",
+    "class": null,
     "model": "Ford F-150 2WD",
     "unnamed:2": null,
     "mpgcity": 20,

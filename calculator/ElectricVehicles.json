@@ -24,7 +24,7 @@
     "kwh/100miles": 33
   },
   {
-    "class": null,
+    "class": "Full-Size Pickup",
     "model": "Chevrolet Silverado EV",
     "mpgecity": null,
     "mpgehighway": null,
@@ -32,7 +32,7 @@
     "kwh/100miles": 50
   },
   {
-    "class": "Full-Size Pickup",
+    "class": null,
     "model": "Ford F-150 Lightning 4WD",
     "mpgecity": null,
     "mpgehighway": null,
