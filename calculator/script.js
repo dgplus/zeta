@@ -79,7 +79,7 @@ $(document).ready(function () {
       evData
         .sort((a, b) => a.model.localeCompare(b.model))
         .forEach((vehicle) => {
-          if (vehicle.model === 'Ford F-150 Lightning 4WD') {
+          if (vehicle.model === 'Chevrolet Silverado EV') {
             evSelect.append(
               `<option value="${vehicle.model}" selected>${vehicle.model}</option>`
             )
@@ -109,7 +109,7 @@ $(document).ready(function () {
           // Add efficiency info to the display text
           const efficiency = vehicle['efficiency(gal/100miles)']
           const displayText = `${vehicle.model} (${efficiency} gal/100mi)`
-          if (vehicle.model === 'Ford F-150 2WD') {
+          if (vehicle.model === 'Chevrolet Silverado 4WD') {
             gasSelect.append(
               `<option value="${vehicle.model}" selected>${displayText}</option>`
             )

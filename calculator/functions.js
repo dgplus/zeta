@@ -320,8 +320,8 @@ async function calculateSavings(milesRange) {
   let costPerKwh = 0
   let evEfficiency = 0
   let evCostPer100Miles = 0
-  let ev = $('#evSelect').val() || 'Ford F-150 Lightning 4WD'
-  let gas = $('#gasSelect').val() || 'Ford F-150 2WD'
+  let ev = $('#evSelect').val() || 'Chevrolet Silverado EV'
+  let gas = $('#gasSelect').val() || 'Chevrolet Silverado 4WD'
   let costPerGallon = 0
   let gasEfficiency = 0
   let gasCostPer100Miles = 0
@@ -698,8 +698,8 @@ async function mapChart(states) {
   // Clear the stateChart array before updating
   stateChart = [];
 
-  let ev = $('#evSelect').val() || 'Ford F-150 Lightning 4WD';
-  let gas = $('#gasSelect').val() || 'Ford F-150 2WD';
+  let ev = $('#evSelect').val() || 'Chevrolet Silverado EV';
+  let gas = $('#gasSelect').val() || 'Chevrolet Silverado 4WD';
   let milesRange = $('#milesRange').val() || 14000;
 
   // Load all necessary data first
