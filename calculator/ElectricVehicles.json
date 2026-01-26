@@ -176,7 +176,7 @@
     "kwh/100miles": 28
   },
   {
-    "class": "Mid-Size SUV",
+    "class": null,
     "model": "Acura ZDX",
     "mpgecity": 98,
     "mpgehighway": 83,
@@ -184,7 +184,7 @@
     "kwh/100miles": 38
   },
   {
-    "class": "Compact SUV",
+    "class": null,
     "model": "Audi Q4 e-tron",
     "mpgecity": 125,
     "mpgehighway": 104,
@@ -192,7 +192,7 @@
     "kwh/100miles": 29
   },
   {
-    "class": "Mid-Size SUV",
+    "class": null,
     "model": "Audi Q6 e-tron",
     "mpgecity": 112,
     "mpgehighway": 96,
@@ -200,7 +200,7 @@
     "kwh/100miles": 32
   },
   {
-    "class": "Mid-Size SUV",
+    "class": null,
     "model": "Audi Q8 e-tron",
     "mpgecity": 77,
     "mpgehighway": 80,
@@ -208,7 +208,7 @@
     "kwh/100miles": 43
   },
   {
-    "class": "Compact Sedan",
+    "class": null,
     "model": "BMW i4",
     "mpgecity": 109,
     "mpgehighway": 108,
@@ -216,7 +216,7 @@
     "kwh/100miles": 31
   },
   {
-    "class": "Mid-Size Sedan",
+    "class": null,
     "model": "BMW i5",
     "mpgecity": 114,
     "mpgehighway": 106,
@@ -224,7 +224,7 @@
     "kwh/100miles": 31
   },
   {
-    "class": "Mid-Size SUV",
+    "class": null,
     "model": "Cadillac LYRIQ",
     "mpgecity": 100,
     "mpgehighway": 83,
@@ -232,7 +232,7 @@
     "kwh/100miles": 37
   },
   {
-    "class": "Compact SUV",
+    "class": null,
     "model": "Cadillac OPTIQ",
     "mpgecity": 117,
     "mpgehighway": 93,
@@ -240,7 +240,7 @@
     "kwh/100miles": 32
   },
   {
-    "class": "Compact SUV",
+    "class": null,
     "model": "Ford Mustang Mach-E",
     "mpgecity": 117,
     "mpgehighway": 104,
@@ -248,7 +248,7 @@
     "kwh/100miles": 30
   },
   {
-    "class": "Compact SUV",
+    "class": null,
     "model": "Genesis GV60",
     "mpgecity": 103,
     "mpgehighway": 95,
@@ -256,7 +256,7 @@
     "kwh/100miles": 34
   },
   {
-    "class": "Mid-Size SUV",
+    "class": null,
     "model": "Genesis GV70 Electrified",
     "mpgecity": 98,
     "mpgehighway": 83,
@@ -264,7 +264,7 @@
     "kwh/100miles": 37
   },
   {
-    "class": "Mid-Size Sedan",
+    "class": null,
     "model": "Genesis G80 Electrified",
     "mpgecity": 97,
     "mpgehighway": 87,
@@ -272,7 +272,7 @@
     "kwh/100miles": 37
   },
   {
-    "class": "Mid-Size SUV",
+    "class": null,
     "model": "Honda Prologue",
     "mpgecity": 115,
     "mpgehighway": 96,
@@ -280,7 +280,7 @@
     "kwh/100miles": 32
   },
   {
-    "class": "Mid-Size Sedan",
+    "class": null,
     "model": "Mercedes-Benz EQE Sedan",
     "mpgecity": 96,
     "mpgehighway": 90,
@@ -288,7 +288,7 @@
     "kwh/100miles": 36
   },
   {
-    "class": "Mid-Size SUV",
+    "class": null,
     "model": "Mercedes-Benz EQE SUV",
     "mpgecity": 90,
     "mpgehighway": 83,
@@ -296,7 +296,7 @@
     "kwh/100miles": 39
   },
   {
-    "class": "Compact SUV",
+    "class": null,
     "model": "Nissan Ariya",
     "mpgecity": 109,
     "mpgehighway": 94,
@@ -304,7 +304,7 @@
     "kwh/100miles": 33
   },
   {
-    "class": "Compact Sedan",
+    "class": null,
     "model": "Polestar 2",
     "mpgecity": 113,
     "mpgehighway": 100,
@@ -312,7 +312,7 @@
     "kwh/100miles": 31
   },
   {
-    "class": "Mid-Size SUV",
+    "class": null,
     "model": "Polestar 3",
     "mpgecity": 88,
     "mpgehighway": 79,
@@ -320,7 +320,7 @@
     "kwh/100miles": 41
   },
   {
-    "class": "Compact SUV",
+    "class": null,
     "model": "Volkswagen ID.4",
     "mpgecity": 115,
     "mpgehighway": 99,
@@ -328,7 +328,7 @@
     "kwh/100miles": 31
   },
   {
-    "class": "Van",
+    "class": null,
     "model": "Volkswagen ID. Buzz",
     "mpgecity": 90,
     "mpgehighway": 83,
