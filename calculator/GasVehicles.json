@@ -12,6 +12,17 @@
     "unnamed:9": "* = uses premium gasoline"
   },
   {
+    "class": "Full-Size SUV",
+    "model": "BMW X7 xDrive40i",
+    "mpgcity": 20,
+    "mpghighway": 24,
+    "mpgcombined": 22,
+    "efficiency(gal/100miles)": 4.55,
+    "vehicleclass": "SUV",
+    "unnamed:8": null,
+    "unnamed:9": "* = uses premium gasoline"
+  },
+  {
     "class": null,
     "model": "Chevrolet Corvette*",
     "unnamed:2": null,
