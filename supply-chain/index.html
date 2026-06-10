@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EV Supply Chain Map</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<!-- Local charging data (run download-charging.py once to generate this file) -->
+<script src="charging-stations.js" onerror="console.log('No local charging data — will fetch from API on demand.')"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;font-family:Roboto,sans-serif;background:#f5f5f5;color:#1a1a1a;overflow:hidden}
+#app{position:absolute;inset:0;display:flex;flex-direction:column}
+
+/* Header */
+header{flex-shrink:0;padding:11px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #111;background:#000;gap:12px;z-index:30}
+.title-block h1{font-size:22px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#fff}
+.header-right{display:flex;align-items:center;gap:14px}
+#help-link{font-size:11px;color:#9ab0d4;font-family:"Roboto Mono",monospace;cursor:pointer;letter-spacing:.03em;white-space:nowrap;text-decoration:none;border-bottom:1px dashed #9ab0d4;background:none;border-top:none;border-left:none;border-right:none;padding:0}
+#help-link:hover{color:#c5d8f5;border-color:#c5d8f5}
+
+/* Body */
+#body{flex:1;display:flex;min-height:0}
+
+/* Sidebar */
+#sidebar{width:240px;flex-shrink:0;background:#fff;border-right:1px solid #e0dbd4;display:flex;flex-direction:column;overflow-y:auto;z-index:20}
+.sidebar-tagline{padding:12px 16px 10px;font-size:12px;color:#7a7268;font-family:"Roboto Mono",monospace;letter-spacing:.01em;line-height:1.5;border-bottom:1px solid #ede9e2}
+.sidebar-section{padding:14px 16px 12px;border-bottom:1px solid #ede9e2}
+.sidebar-section:last-child{border-bottom:none}
+.section-label{font-size:11px;font-family:"Roboto Mono",monospace;letter-spacing:.12em;text-transform:uppercase;color:#9a9288;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.section-label::after{content:'';flex:1;height:1px;background:#ede9e2}
+
+/* Stats */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.stat-card{background:#f7f5f1;border-radius:6px;padding:8px 10px;border:1px solid #ede9e2}
+.stat-num{font-size:16px;font-weight:600;color:#1a1a1a;font-family:"Roboto Mono",monospace;line-height:1}
+.stat-lab{color:#9a9288;font-size:9px;text-transform:uppercase;letter-spacing:.07em;margin-top:3px;font-family:"Roboto Mono",monospace}
+
+/* Filter rows */
+.filter-item{display:flex;align-items:center;gap:9px;padding:5px 0;cursor:pointer;border-radius:4px;transition:background .1s;user-select:none}
+.filter-item:hover{background:#f7f5f1;margin:0 -6px;padding:5px 6px}
+.filter-check{width:15px;height:15px;border-radius:3px;border:1.5px solid #ccc6bb;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s;background:#fff}
+.filter-check.checked{border-color:transparent}
+.filter-check.checked::after{content:'✓';font-size:10px;color:#fff;font-weight:700;line-height:1}
+.filter-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.filter-label{font-size:13px;color:#2a2520;flex:1}
+.filter-count{font-size:11px;color:#b0a89e;font-family:"Roboto Mono",monospace}
+
+/* Layer toggles */
+.layer-toggle{display:flex;align-items:center;gap:10px;padding:6px 0;cursor:pointer;user-select:none}
+.layer-toggle:hover .toggle-track{border-color:#aaa}
+.toggle-track{width:32px;height:17px;border-radius:9px;border:1.5px solid #ccc6bb;background:#e8e4de;flex-shrink:0;position:relative;transition:all .2s}
+.toggle-track.on{background:#1565c0;border-color:#1565c0}
+.toggle-knob{position:absolute;top:1px;left:1px;width:11px;height:11px;border-radius:50%;background:#fff;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.toggle-track.on .toggle-knob{left:16px}
+.toggle-label{font-size:13px;color:#2a2520;flex:1;line-height:1.3}
+.toggle-sub{font-size:10px;color:#9a9288;font-family:"Roboto Mono",monospace;display:block;margin-top:1px}
+
+/* Map */
+#map-container{flex:1;position:relative;min-height:0;min-width:0}
+#map{position:absolute;inset:0;width:100%;height:100%}
+
+/* Tooltip */
+#tooltip{position:absolute;background:#fff;border:1.5px solid #ddd8cf;border-radius:10px;padding:16px 20px;pointer-events:auto;max-width:360px;min-width:260px;display:none;z-index:100;box-shadow:0 6px 24px rgba(0,0,0,.14)}
+.tt-close{position:absolute;top:10px;right:12px;background:none;border:none;cursor:pointer;font-size:17px;color:#b0a89e;line-height:1;padding:2px 6px;border-radius:4px}
+.tt-close:hover{color:#1a1a1a;background:#f5f3ef}
+#tooltip .tt-co{font-weight:700;font-size:16px;margin-bottom:3px;color:#1a1a1a}
+#tooltip .tt-pl{color:#9a9288;font-size:12px;margin-bottom:8px}
+#tooltip .tt-cat{display:inline-block;padding:2px 9px;border-radius:4px;font-size:11px;font-family:"Roboto Mono",monospace;margin-bottom:8px}
+#tooltip .tt-row{display:flex;justify-content:space-between;gap:16px;margin-top:5px}
+#tooltip .tt-label{color:#b0a89e;font-family:"Roboto Mono",monospace;font-size:10px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+#tooltip .tt-val{color:#3a3530;font-size:13px;text-align:right;font-weight:500}
+.party-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle;flex-shrink:0}
+.party-R{background:#e53935}
+.party-D{background:#1e88e5}
+.party-I{background:#9c27b0}
+
+/* State panel */
+#state-panel{position:absolute;top:16px;right:16px;bottom:16px;width:320px;background:rgba(255,255,255,.98);border:1px solid #ddd8cf;border-radius:10px;z-index:20;backdrop-filter:blur(6px);box-shadow:0 6px 32px rgba(0,0,0,.15);display:none;flex-direction:column;overflow:hidden}
+#state-panel .sp-header{flex-shrink:0;display:flex;justify-content:space-between;align-items:flex-start;padding:20px 20px 14px;border-bottom:1px solid #ede9e2}
+#state-panel h3{font-size:20px;font-weight:700;color:#1a1a1a;line-height:1.2}
+.sp-subtitle{font-size:11px;color:#9a9288;font-family:"Roboto Mono",monospace;margin-top:3px}
+#state-close{background:none;border:none;cursor:pointer;font-size:20px;color:#b0a89e;line-height:1;padding:2px 4px;flex-shrink:0;margin-left:8px;border-radius:4px}
+#state-close:hover{color:#1a1a1a;background:#f5f3ef}
+#sp-body{flex:1;overflow-y:auto;padding:0 20px 20px}
+.sp-cat-section{margin-top:14px}
+.sp-cat-header{display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.sp-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.sp-cat-label{font-size:10px;font-family:"Roboto Mono",monospace;text-transform:uppercase;letter-spacing:.1em;color:#9a9288;font-weight:600}
+.sp-cat-count{font-size:10px;font-family:"Roboto Mono",monospace;color:#b0a89e;margin-left:auto}
+.sp-facility-row{display:flex;flex-direction:column;padding:6px 0 6px 17px;border-bottom:1px solid #f5f3ef;cursor:default}
+.sp-facility-row:last-child{border-bottom:none}
+.sp-facility-name{font-size:13px;color:#1a1a1a;font-weight:500;line-height:1.3}
+.sp-facility-plant{font-size:11px;color:#9a9288;margin-top:1px}
+.sp-facility-city{font-size:11px;color:#b0a89e;font-family:"Roboto Mono",monospace}
+.sp-senators{margin-top:16px;padding-top:14px;border-top:2px solid #ede9e2}
+.sp-senators-label{font-size:10px;font-family:"Roboto Mono",monospace;text-transform:uppercase;letter-spacing:.1em;color:#9a9288;margin-bottom:8px;font-weight:600}
+.sp-no-facilities{padding:20px 0;font-size:13px;color:#9a9288;font-family:"Roboto Mono",monospace;text-align:center}
+
+/* Help panel */
+#help-panel{display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border:1px solid #ddd8cf;border-radius:10px;padding:24px 28px;z-index:200;box-shadow:0 8px 40px rgba(0,0,0,.16);max-width:440px;width:90%}
+#help-panel h3{font-size:15px;font-weight:700;color:#1a1a1a;margin-bottom:16px;letter-spacing:.02em}
+.help-row{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #f0ece6}
+.help-row:last-of-type{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.help-icon{font-size:18px;flex-shrink:0;width:30px;text-align:center;margin-top:1px}
+.help-text strong{display:block;font-size:13px;font-weight:600;color:#1a1a1a;margin-bottom:2px}
+.help-text span{font-size:12px;color:#6b6560;line-height:1.5}
+#help-close{display:block;margin-top:18px;width:100%;padding:7px;border-radius:6px;background:#1a1a1a;color:#fff;border:none;font-size:12px;font-family:"Roboto Mono",monospace;cursor:pointer;letter-spacing:.05em}
+#help-close:hover{background:#333}
+#help-overlay{display:none;position:absolute;inset:0;background:rgba(0,0,0,.22);z-index:199;backdrop-filter:blur(2px)}
+
+/* Sidebar toggle */
+#sidebar-toggle{position:absolute;top:50%;left:240px;transform:translateY(-50%);z-index:25;width:18px;height:44px;background:#fff;border:1px solid #e0dbd4;border-left:none;border-radius:0 6px 6px 0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#9a9288;font-size:10px;transition:left .25s,background .12s;box-shadow:2px 0 6px rgba(0,0,0,.06)}
+#sidebar-toggle:hover{background:#f0ece6;color:#1a1a1a}
+#body.collapsed #sidebar{width:0;overflow:hidden;border-right:none}
+#body.collapsed #sidebar-toggle{left:0;border-left:1px solid #e0dbd4;border-radius:0 6px 6px 0}
+#body.collapsed #sidebar-toggle .toggle-arrow{transform:rotate(180deg)}
+.toggle-arrow{display:inline-block;transition:transform .2s}
+
+/* Charging loader */
+#charging-loader{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.94);border:1px solid #ddd8cf;border-radius:6px;padding:5px 14px;font-size:11px;color:#6b6560;font-family:"Roboto Mono",monospace;display:none;z-index:10;backdrop-filter:blur(4px)}
+
+/* Mobile */
+@media(max-width:700px){
+  #sidebar{display:none}
+  header{padding:9px 12px}
+  .title-block h1{font-size:15px}
+  #state-panel{top:auto;bottom:0;left:0;right:0;width:100%;height:60vh;border-radius:12px 12px 0 0}
+  #tooltip{min-width:unset;max-width:90vw;padding:10px 12px}
+}
+
+/* Mapbox attribution tweak */
+.mapboxgl-ctrl-bottom-right{bottom:4px!important;right:4px!important}
+.mapboxgl-ctrl-logo{display:none!important}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="title-block"><h1>EV Supply Chain — US Facilities</h1></div>
+    <div class="header-right"><button id="help-link">How to use this map ↗</button></div>
+  </header>
+  <div id="body">
+    <button id="sidebar-toggle" title="Collapse/expand panel"><span class="toggle-arrow">◀</span></button>
+    <div id="sidebar">
+      <div class="sidebar-tagline">Mapping the buildout of the American EV supply chain</div>
+
+      <!-- Stats -->
+      <div class="sidebar-section">
+        <div class="section-label">Overview</div>
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-num" id="s-total">—</div><div class="stat-lab">Facilities</div></div>
+          <div class="stat-card"><div class="stat-num" id="s-cats">—</div><div class="stat-lab">Categories</div></div>
+        </div>
+      </div>
+
+      <!-- Category Filters -->
+      <div class="sidebar-section">
+        <div class="section-label">Categories</div>
+        <div id="filters"></div>
+      </div>
+
+      <!-- Map Layers -->
+      <div class="sidebar-section">
+        <div class="section-label">Map Layers</div>
+        <div id="layer-toggles">
+          <div class="layer-toggle" id="lt-senate">
+            <div class="toggle-track" id="tt-senate"><div class="toggle-knob"></div></div>
+            <div class="toggle-label">Senate Party<span class="toggle-sub">State fill by party control</span></div>
+          </div>
+          <div class="layer-toggle" id="lt-charging">
+            <div class="toggle-track" id="tt-charging"><div class="toggle-knob"></div></div>
+            <div class="toggle-label">Charging Stations<span class="toggle-sub">NREL alt-fuel database</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div class="sidebar-section">
+        <div class="section-label">Party Key</div>
+        <div style="display:flex;flex-direction:column;gap:5px;font-size:12px;color:#4a4540">
+          <div style="display:flex;align-items:center;gap:8px"><span class="party-dot party-R" style="width:11px;height:11px"></span>Republican</div>
+          <div style="display:flex;align-items:center;gap:8px"><span class="party-dot party-D" style="width:11px;height:11px"></span>Democrat</div>
+          <div style="display:flex;align-items:center;gap:8px"><span class="party-dot party-I" style="width:11px;height:11px"></span>Independent</div>
+        </div>
+      </div>
+
+    </div><!-- end sidebar -->
+
+    <div id="map-container">
+      <div id="help-overlay"></div>
+      <div id="help-panel">
+        <h3>How to use this map</h3>
+        <div class="help-row"><div class="help-icon">🖱️</div><div class="help-text"><strong>Hover over a dot</strong><span>See facility details including company, category, and congressional representatives.</span></div></div>
+        <div class="help-row"><div class="help-icon">📍</div><div class="help-text"><strong>Click a state</strong><span>Open a summary of all facilities in that state with senator info.</span></div></div>
+        <div class="help-row"><div class="help-icon">🎨</div><div class="help-text"><strong>Filter by category</strong><span>Use the checkboxes to toggle facility types on and off.</span></div></div>
+        <div class="help-row"><div class="help-icon">🗂️</div><div class="help-text"><strong>Map Layers</strong><span>Toggle Senate party colors and EV charging stations on and off.</span></div></div>
+        <div class="help-row"><div class="help-icon">🔍</div><div class="help-text"><strong>Zoom & pan</strong><span>Scroll to zoom, drag to pan. Map centers on the continental US.</span></div></div>
+        <button id="help-close">Got it</button>
+      </div>
+      <div id="map"></div>
+      <div id="tooltip"></div>
+      <div id="charging-loader">Loading charging stations…</div>
+      <div id="state-panel">
+        <div class="sp-header">
+          <div><h3 id="sp-title">State</h3><div class="sp-subtitle" id="sp-subtitle"></div></div>
+          <button id="state-close">&#x2715;</button>
+        </div>
+        <div id="sp-body"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Token ──────────────────────────────────────────────────────────────────
+mapboxgl.accessToken = 'pk.eyJ1IjoiZGdwbHVzZGVzaWduIiwiYSI6ImNtcTg5dGw2bDA0MTAycHB2a3VuZHlnOXkifQ.Vrab7Gs5L22ZgG1lF08wcA';
+
+// ── Category config ────────────────────────────────────────────────────────
+const CATEGORIES = {
+  "Battery Production":{ color:"#1565c0" },
+  "OEM":              { color:"#2e7d32" },
+  "Minerals":         { color:"#e65100" },
+  "Charging":         { color:"#b21fc8" },
+  "Recycling":        { color:"#00838f" },
+  "Supplier":         { color:"#ad1457" },
+  "Other":            { color:"#546e7a" },
+};
+
+// ── Senators (119th Congress) ──────────────────────────────────────────────
+const SENATORS = {
+  AL:[{name:"Tommy Tuberville",party:"R"},{name:"Katie Britt",party:"R"}],
+  AK:[{name:"Lisa Murkowski",party:"R"},{name:"Dan Sullivan",party:"R"}],
+  AZ:[{name:"Mark Kelly",party:"D"},{name:"Ruben Gallego",party:"D"}],
+  AR:[{name:"John Boozman",party:"R"},{name:"Tom Cotton",party:"R"}],
+  CA:[{name:"Alex Padilla",party:"D"},{name:"Adam Schiff",party:"D"}],
+  CO:[{name:"Michael Bennet",party:"D"},{name:"John Hickenlooper",party:"D"}],
+  CT:[{name:"Chris Murphy",party:"D"},{name:"Richard Blumenthal",party:"D"}],
+  DE:[{name:"Chris Coons",party:"D"},{name:"Lisa Blunt Rochester",party:"D"}],
+  FL:[{name:"Rick Scott",party:"R"},{name:"Ashley Moody",party:"R"}],
+  GA:[{name:"Jon Ossoff",party:"D"},{name:"Raphael Warnock",party:"D"}],
+  HI:[{name:"Mazie Hirono",party:"D"},{name:"Brian Schatz",party:"D"}],
+  ID:[{name:"Jim Risch",party:"R"},{name:"Mike Crapo",party:"R"}],
+  IL:[{name:"Dick Durbin",party:"D"},{name:"Tammy Duckworth",party:"D"}],
+  IN:[{name:"Todd Young",party:"R"},{name:"Jim Banks",party:"R"}],
+  IA:[{name:"Chuck Grassley",party:"R"},{name:"Joni Ernst",party:"R"}],
+  KS:[{name:"Jerry Moran",party:"R"},{name:"Roger Marshall",party:"R"}],
+  KY:[{name:"Mitch McConnell",party:"R"},{name:"Rand Paul",party:"R"}],
+  LA:[{name:"Bill Cassidy",party:"R"},{name:"John Kennedy",party:"R"}],
+  ME:[{name:"Susan Collins",party:"R"},{name:"Angus King",party:"I"}],
+  MD:[{name:"Angela Alsobrooks",party:"D"},{name:"Chris Van Hollen",party:"D"}],
+  MA:[{name:"Elizabeth Warren",party:"D"},{name:"Ed Markey",party:"D"}],
+  MI:[{name:"Gary Peters",party:"D"},{name:"Elissa Slotkin",party:"D"}],
+  MN:[{name:"Amy Klobuchar",party:"D"},{name:"Tina Smith",party:"D"}],
+  MS:[{name:"Roger Wicker",party:"R"},{name:"Cindy Hyde-Smith",party:"R"}],
+  MO:[{name:"Josh Hawley",party:"R"},{name:"Eric Schmitt",party:"R"}],
+  MT:[{name:"Steve Daines",party:"R"},{name:"Tim Sheehy",party:"R"}],
+  NE:[{name:"Deb Fischer",party:"R"},{name:"Pete Ricketts",party:"R"}],
+  NV:[{name:"Catherine Cortez Masto",party:"D"},{name:"Jacky Rosen",party:"D"}],
+  NH:[{name:"Jeanne Shaheen",party:"D"},{name:"Maggie Hassan",party:"D"}],
+  NJ:[{name:"Andy Kim",party:"D"},{name:"Cory Booker",party:"D"}],
+  NM:[{name:"Martin Heinrich",party:"D"},{name:"Ben Ray Luján",party:"D"}],
+  NY:[{name:"Chuck Schumer",party:"D"},{name:"Kirsten Gillibrand",party:"D"}],
+  NC:[{name:"Thom Tillis",party:"R"},{name:"Ted Budd",party:"R"}],
+  ND:[{name:"John Hoeven",party:"R"},{name:"Kevin Cramer",party:"R"}],
+  OH:[{name:"Bernie Moreno",party:"R"},{name:"Jon Husted",party:"R"}],
+  OK:[{name:"James Lankford",party:"R"},{name:"Markwayne Mullin",party:"R"}],
+  OR:[{name:"Ron Wyden",party:"D"},{name:"Jeff Merkley",party:"D"}],
+  PA:[{name:"John Fetterman",party:"D"},{name:"Dave McCormick",party:"R"}],
+  RI:[{name:"Jack Reed",party:"D"},{name:"Sheldon Whitehouse",party:"D"}],
+  SC:[{name:"Lindsey Graham",party:"R"},{name:"Tim Scott",party:"R"}],
+  SD:[{name:"John Thune",party:"R"},{name:"Mike Rounds",party:"R"}],
+  TN:[{name:"Marsha Blackburn",party:"R"},{name:"Bill Hagerty",party:"R"}],
+  TX:[{name:"John Cornyn",party:"R"},{name:"Ted Cruz",party:"R"}],
+  UT:[{name:"Mike Lee",party:"R"},{name:"John Curtis",party:"R"}],
+  VT:[{name:"Bernie Sanders",party:"I"},{name:"Peter Welch",party:"D"}],
+  VA:[{name:"Mark Warner",party:"D"},{name:"Tim Kaine",party:"D"}],
+  WA:[{name:"Patty Murray",party:"D"},{name:"Maria Cantwell",party:"D"}],
+  WV:[{name:"Shelley Moore Capito",party:"R"},{name:"Jim Justice",party:"R"}],
+  WI:[{name:"Tammy Baldwin",party:"D"},{name:"Ron Johnson",party:"R"}],
+  WY:[{name:"John Barrasso",party:"R"},{name:"Cynthia Lummis",party:"R"}],
+};
+
+// ── Senate party control by state FIPS (R=both R, D=both D, S=split) ──────
+const SENATE_PARTY = {
+  "01":"R","02":"R","05":"R","12":"R","16":"R","18":"R","19":"R","20":"R","21":"R",
+  "22":"R","28":"R","29":"R","30":"R","31":"R","37":"R","38":"R","39":"R","40":"R",
+  "45":"R","46":"R","47":"R","48":"R","49":"R","54":"R","56":"R",
+  "04":"D","06":"D","08":"D","09":"D","10":"D","13":"D","15":"D","17":"D","24":"D",
+  "25":"D","26":"D","27":"D","32":"D","33":"D","34":"D","35":"D","36":"D","41":"D",
+  "44":"D","50":"D","51":"D","53":"D",
+  "23":"S","42":"S","55":"S"
+};
+
+// ── State abbr lookup ──────────────────────────────────────────────────────
+const FIPS_ABBR = {"01":"AL","02":"AK","04":"AZ","05":"AR","06":"CA","08":"CO","09":"CT","10":"DE","11":"DC","12":"FL","13":"GA","15":"HI","16":"ID","17":"IL","18":"IN","19":"IA","20":"KS","21":"KY","22":"LA","23":"ME","24":"MD","25":"MA","26":"MI","27":"MN","28":"MS","29":"MO","30":"MT","31":"NE","32":"NV","33":"NH","34":"NJ","35":"NM","36":"NY","37":"NC","38":"ND","39":"OH","40":"OK","41":"OR","42":"PA","44":"RI","45":"SC","46":"SD","47":"TN","48":"TX","49":"UT","50":"VT","51":"VA","53":"WA","54":"WV","55":"WI","56":"WY"};
+const FIPS_NAME = {"01":"Alabama","02":"Alaska","04":"Arizona","05":"Arkansas","06":"California","08":"Colorado","09":"Connecticut","10":"Delaware","11":"DC","12":"Florida","13":"Georgia","15":"Hawaii","16":"Idaho","17":"Illinois","18":"Indiana","19":"Iowa","20":"Kansas","21":"Kentucky","22":"Louisiana","23":"Maine","24":"Maryland","25":"Massachusetts","26":"Michigan","27":"Minnesota","28":"Mississippi","29":"Missouri","30":"Montana","31":"Nebraska","32":"Nevada","33":"New Hampshire","34":"New Jersey","35":"New Mexico","36":"New York","37":"North Carolina","38":"North Dakota","39":"Ohio","40":"Oklahoma","41":"Oregon","42":"Pennsylvania","44":"Rhode Island","45":"South Carolina","46":"South Dakota","47":"Tennessee","48":"Texas","49":"Utah","50":"Vermont","51":"Virginia","53":"Washington","54":"West Virginia","55":"Wisconsin","56":"Wyoming"};
+
+// ── Facility data ──────────────────────────────────────────────────────────
+const FACILITIES = [{"company":"6k Inc.","plant":"6k Inc.","source":"https://www.6kinc.com/6k-energy-production-facilities/","description":"","category":"Battery Production","city":"Jackson","state":"TN","lat":35.57042,"lng":-88.8627,"houseRep":"David Kustoff","houseParty":"R"},{"company":"6k Inc.","plant":"\"Battery Center for Excellence\"","source":"https://www.6kinc.com/news/press-release/6k-prepares-for-major-advancement-in-battery-materials/","description":"","category":"Battery Production","city":"North Andover","state":"MA","lat":42.6987,"lng":-71.1351,"houseRep":"Seth Moulton","houseParty":"D"},{"company":"Advanced Nano Products","plant":"Advanced Nano Products","source":"https://www.lanereport.com/158717/2022/08/advanced-nano-products-creating-93-jobs-with-nearly-50m-investment-to-locate-in-elizabethtown/","description":"","category":"Battery Production","city":"Elizabethtown","state":"KY","lat":37.68481,"lng":-85.8784,"houseRep":"Brett Guthrie","houseParty":"R"},{"company":"American Battery Solutions","plant":"Battery Innovation Center","source":"https://www.americanbatterysolutions.com/facilities","description":"","category":"Battery Production","city":"Lake Orion","state":"MI","lat":42.72308,"lng":-83.2769,"houseRep":"Lisa McClain","houseParty":"R"},{"company":"Anovion Technologies","plant":"Anovion Center of Excellence","source":"https://www.anoviontech.com/contact-us-2/","description":"Up to 5,000 tpa graphitization","category":"Battery Production","city":"Sanborn","state":"NY","lat":43.1372,"lng":-78.8848,"houseRep":"Marc Molinaro","houseParty":"R"},{"company":"Black Butte","plant":"Black Butte","source":"https://blackbuttecopper.com/faqs/#:~:text=What%20Type%20of%20Investment%20Will,will%20cost%20approximately%20%24275%20million","description":"50,000 t / year","category":"Minerals","city":"Helena","state":"MT","lat":46.5274,"lng":-112.21,"houseRep":"Troy Downing","houseParty":"R"},{"company":"Cummins, Daimler Truck, PACCAR","plant":"Cummins, Daimler Truck, PACCAR","source":"https://www.reuters.com/technology/cummins-daimler-truck-paccar-pick-mississippi-battery-cell-production-2024-01-18/","description":"10 GWh / year","category":"Battery Production","city":"Marshall County","state":"MS","lat":34.76619,"lng":-89.5042,"houseRep":"Trent Kelly","houseParty":"R"},{"company":"Ecoplastic Corporation","plant":"Ecoplastic Corporation","source":"https://www.georgia.org/press-release/longtime-kia-and-hmg-supplier-build-manufacturing-facility-bulloch-county","description":"","category":"OEM","city":"Bulloch County","state":"GA","lat":32.39448,"lng":-81.7416,"houseRep":"Rick Allen","houseParty":"R"},{"company":"EV Range","plant":"Head Office","source":"https://www.evrange.com","description":"","category":"Charging","city":"San Pedro","state":"CA","lat":33.72453,"lng":-118.286,"houseRep":"Nanette Diaz Barragán","houseParty":"D"},{"company":"Factorial Energy","plant":"Production Facility","source":"https://www.businesswire.com/news/home/20220825005452/en/Factorial-Energy-to-Open-New-Solid-State-EV-Battery-Development-and-Manufacturing-Facility-in-Methuen-Mass.","description":"","category":"Battery Production","city":"Methuen","state":"MA","lat":42.4886,"lng":-71.1573,"houseRep":"Katherine Clark","houseParty":"D"},{"company":"FLO","plant":"Michigan Office and Assembly Plant","source":"https://www.flo.com/","description":"250,000 chargers by 2028","category":"Charging","city":"Auburn Hills","state":"MI","lat":42.6875,"lng":-83.2341,"houseRep":"Haley Stevens","houseParty":"D"},{"company":"Ford (Blue Oval City)","plant":"Ford (Blue Oval City)","source":"https://media.ford.com/content/fordmedia/fna/us/en/news/2021/09/29/ford--sk-innovation-add-6-000-jobs-in-tennessee.html","description":"200,000 vehicles / year","category":"OEM","city":"Stanton","state":"TN","lat":35.45611,"lng":-89.3391,"houseRep":"David Kustoff","houseParty":"R"},{"company":"Ford (Blue Oval City)","plant":"Ford (Blue Oval City)","source":"https://media.ford.com/content/fordmedia/fna/us/en/news/2021/09/27/ford-to-lead-americas-shift-to-electric-vehicles.html","description":"200,000 vehicles / year","category":"OEM","city":"Glendale","state":"KY","lat":37.60173,"lng":-85.9055,"houseRep":"Brett Guthrie","houseParty":"R"},{"company":"Green Power Motor Company","plant":"Manufacturing Facility","source":"https://greenpowermotor.com/contact-locations/","description":"","category":"OEM","city":"South Charleston","state":"WV","lat":38.3686,"lng":-81.6999,"houseRep":"Carol Miller","houseParty":"R"},{"company":"Green Power Motor Company","plant":"Manufacturing Facility","source":"https://greenpowermotor.com/contact-locations/","description":"","category":"OEM","city":"Porterville","state":"CA","lat":36.0651,"lng":-119.016,"houseRep":"David Valadao","houseParty":"R"},{"company":"Green Power Motor Company","plant":"Corporate Offices","source":"https://greenpowermotor.com/contact-locations/","description":"","category":"OEM","city":"Riverside","state":"CA","lat":34.1064,"lng":-117.593,"houseRep":"Norma Torres","houseParty":"D"},{"company":"Green Power Motor Company","plant":"Truck body manufacturing facility","source":"https://greenpowermotor.com/contact-locations/","description":"","category":"OEM","city":"Torrance","state":"CA","lat":33.8358,"lng":-118.341,"houseRep":"Maxine Waters","houseParty":"D"},{"company":"Heliox (A Siemens Business)","plant":"North American Headquarters","source":"https://www.heliox-energy.com/us/contact-us","description":"","category":"Charging","city":"Atlanta","state":"GA","lat":33.84437,"lng":-84.4741,"houseRep":"Rich McCormick","houseParty":"R"},{"company":"Honda Motor/LG Energy","plant":"Honda Motor/LG Energy","source":"https://wraltechwire.com/2022/08/29/honda-south-korean-firm-plan-4-4b-battery-project-ohio-reportedly-on-sitelist/#:~:text=by%20Associated%20Press%20%E2%80%94%20August%2029,the%20two%20companies%20said%20Monday","description":"10 GWh / year","category":"Battery Production","city":"Fayette County","state":"OH","lat":39.55525,"lng":-83.4619,"houseRep":"Mike Carey","houseParty":"R"},{"company":"Honda, LG Energy Solutions","plant":"Honda, LG Energy Solutions","source":"https://hondanews.com/en-US/honda-corporate/releases/honda-makes-major-investment-in-ohio-to-create-new-electric-vehicle-hub?utm_medium=email&utm_campaign=Honda%20Makes%20Major%20Investment%20in%20Ohio%20to%20Create%20New%20Electric%20Vehicle%20Hub&utm_content=Honda%20Makes%20Major%20Investment%20in%20Ohio%20to%20Create%20New%20Electric%20Vehicle%20Hub+CID_6e429602256932a082ef2445338e2027&utm_source=Honda%20Campaign%20Monitor&utm_term=View%20Full%20Release","description":"10 GWh / year","category":"Battery Production","city":"Fayette County","state":"OH","lat":39.592,"lng":-83.4644,"houseRep":"Mike Carey","houseParty":"R"},{"company":"Hyundai + SK On","plant":"Hyundai + SK On","source":"https://www.hyundainews.com/en-us/releases/3711","description":"10 GWh / year","category":"Battery Production","city":"Bartow County","state":"GA","lat":32.88914,"lng":-82.4666,"houseRep":"Rick Allen","houseParty":"R"},{"company":"Hyundai and SK On","plant":"Hyundai and SK On","source":"https://www.reuters.com/business/autos-transportation/hyundai-sk-build-new-battery-plant-georgia-2022-12-08/","description":"10 GWh / year","category":"Battery Production","city":"Bartow County","state":"GA","lat":32.88914,"lng":-82.4666,"houseRep":"Rick Allen","houseParty":"R"},{"company":"ioneer","plant":"Rhyolite Ridge","source":"https://www.ioneer.com/","description":"Lithium-Boron project","category":"Minerals","city":"Rhyolite Ridge","state":"NV","lat":36.90383,"lng":-116.829,"houseRep":"Steven Horsford","houseParty":"D"},{"company":"John Deere","plant":"John Deere Kernersville","source":"https://about.deere.com/en-us/locations/factories/kernersville","description":"Battery production and charging for Keisel brand.","category":"Battery Production","city":"Kernersville","state":"NC","lat":36.11831,"lng":-80.1013,"houseRep":"Jeff Jackson","houseParty":"D"},{"company":"KORE Power","plant":"Headquarters","source":"https://korepower.com/contact","description":"","category":"Battery Production","city":"Waterbury Village Historic District","state":"VT","lat":33.70397,"lng":-112.352,"houseRep":"Paul Gosar","houseParty":"R"},{"company":"LG","plant":"LG","source":"https://www.lgnewsroom.com/2024/01/lg-opens-its-first-u-s-factory-to-produce-advanced-ev-chargers/","description":"5,000 chargers / year","category":"Charging","city":"Fort Worth","state":"TX","lat":32.77142,"lng":-97.2915,"houseRep":"Marc Veasey","houseParty":"D"},{"company":"LG","plant":"LG","source":"https://clarksvillenow.com/local/lg-chem-to-build-3-2-billion-plant-in-clarksville-to-supply-material-for-ev-batteries/","description":"10 GWh / year","category":"Battery Production","city":"Clarksville","state":"TN","lat":36.52263,"lng":-87.3349,"houseRep":"Mark Green","houseParty":"R"},{"company":"LG + Hyundai","plant":"LG + Hyundai","source":"https://insideevs.com/news/671266/hyundai-lges-30gwh-battery-jv-georgia/","description":"10 GWh / year","category":"Battery Production","city":"Savannah","state":"GA","lat":32.07468,"lng":-81.0883,"houseRep":"Buddy Carter","houseParty":"R"},{"company":"LG Chem","plant":"LG Chem","source":"https://www.abc15.com/news/business/korean-electronics-giant-lg-plans-2-8-billion-plant-in-queen-creek","description":"10 GWh / year","category":"Battery Production","city":"Queen Creek","state":"AZ","lat":33.28484,"lng":-111.656,"houseRep":"Andy Biggs","houseParty":"R"},{"company":"LG Energy Solution","plant":"LG Energy Solution","source":"https://news.lgensol.com/company-news/press-releases/1613/","description":"10 GWh / year","category":"Battery Production","city":"Queen Creek","state":"AZ","lat":33.28484,"lng":-111.656,"houseRep":"Andy Biggs","houseParty":"R"},{"company":"LG Energy Solutions","plant":"LG Energy Solutions","source":"https://www.michiganbusiness.org/press-releases/2022/03/whitmer-announces-1200-new-jobs-from-lg-energy-solutions-$1.7-billion-investment-expansion-holland/","description":"10 GWh / year","category":"Battery Production","city":"Holland","state":"MI","lat":42.74381,"lng":-86.0837,"houseRep":"Bill Huizenga","houseParty":"R"},{"company":"LG Energy Solutions","plant":"LG Energy Solutions","source":"https://www.reuters.com/business/autos-transportation/toyota-lg-energy-sign-battery-supply-agreement-power-evs-2023-10-04/","description":"10 GWh / year","category":"Battery Production","city":"Holland","state":"MI","lat":42.74381,"lng":-86.0837,"houseRep":"Bill Huizenga","houseParty":"R"},{"company":"Lilac Solutions","plant":"Fernley Facility","source":"https://www.heraldtribune.com/press-release/story/121175/lilac-completes-construction-of-ion-exchange-media-manufacturing-line-in-nevada-to-support-global-lithium-production/","description":"","category":"Minerals","city":"Fernley","state":"NV","lat":39.7,"lng":-119.5,"houseRep":"Mark Amodei","houseParty":"R"},{"company":"Lisbon Valley Mining Co.","plant":"Lisbon Valley Copper Mine","source":"https://geology.utah.gov/map-pub/survey-notes/lisbon-valley-copper-project/","description":"","category":"Minerals","city":"La Sal","state":"UT","lat":38.5804,"lng":-109.54,"houseRep":"Mike Kennedy","houseParty":"R"},{"company":"Lithium Americas","plant":"Thacker Pass","source":"https://finance.yahoo.com/news/gm-lithium-americas-develop-u-113000811.html","description":"","category":"Minerals","city":"Orovada","state":"NV","lat":41.69974,"lng":-118.073,"houseRep":"Mark Amodei","houseParty":"R"},{"company":"Livent","plant":"Livent","source":"https://www.deq.nc.gov/ncd000771964liventfactsheet20250918pdf/open","description":"","category":"Minerals","city":"Bessemer City","state":"NC","lat":35.31956,"lng":-81.2348,"houseRep":"Jeff McDowell","houseParty":"R"},{"company":"Lucid","plant":"Lucid AMP-1","source":"https://lucidmotors.com/stories/lucid-amp-1-expands","description":"Produces the Air and Gravity","category":"OEM","city":"Casa Grande","state":"AZ","lat":32.89055,"lng":-111.754,"houseRep":"Juan Ciscomani","houseParty":"R"},{"company":"Lucid","plant":"Lucid R&D Business Hub","source":"https://www.fox2detroit.com/news/lucid-motors-makes-10-million-investment-in-michigan-with-southfield-hub","description":"","category":"OEM","city":"Southfield","state":"MI","lat":42.49695,"lng":-83.2911,"houseRep":"Rashida Tlaib","houseParty":"D"},{"company":"Talon Metals","plant":"Eagle Nickel-Copper Mine","source":"https://www.mining-technology.com/projects/eagle-nickel-copper-mine-michigan-us/","description":"","category":"Minerals","city":"Big Bay","state":"MI","lat":46.81466,"lng":-87.6995,"houseRep":"Jack Bergman","houseParty":"R"},{"company":"Maxwell Vehicles","plant":"Maxwell Vehicles","source":"https://maxwellvehicles.com/","description":"","category":"OEM","city":"Downey","state":"CA","lat":33.95653,"lng":-118.359,"houseRep":"Maxine Waters","houseParty":"D"},{"company":"Mercedez-Benz","plant":"Mercedez-Benz","source":"https://mbvcharleston.com/","description":"","category":"OEM","city":"Ladson","state":"SC","lat":33.01317,"lng":-80.1072,"houseRep":"Nancy Mace","houseParty":"R"},{"company":"Mercedez-Benz","plant":"Mercedes-Benz Battery Plant","source":"https://group.mercedes-benz.com/careers/about-us/locations/location-detail-page-416402.html","description":"","category":"OEM","city":"Woodstock","state":"AL","lat":33.17994,"lng":-87.1659,"houseRep":"Gary Palmer","houseParty":"R"},{"company":"Mercedez-Benz","plant":"Tuscaloosa Plant","source":"https://www.caranddriver.com/news/a70022389/mercedes-benzs-eq-evs-restart-production/","description":"","category":"OEM","city":"Vance","state":"AL","lat":33.22613,"lng":-87.2258,"houseRep":"Terri Sewell","houseParty":"D"},{"company":"Microvast","plant":"Microvast","source":"https://www.tn.gov/ecd/news/2021/2/10/governor-lee--commissioner-rolfe-announce-microvast-to-establish-manufacturing-facility-in-clarksville.html","description":"","category":"Battery Production","city":"Clarksville","state":"TN","lat":36.52263,"lng":-87.3349,"houseRep":"Mark Green","houseParty":"R"},{"company":"Asarco","plant":"Mission Complex","source":"https://www.asarco.com/mines/#:~:text=Mines%20%E2%80%93%20Asarco-,MINES,1997","description":"","category":"Minerals","city":"Sahuarita","state":"AZ","lat":32.21798,"lng":-110.971,"houseRep":"Ruben Gallego","houseParty":"D"},{"company":"Electreon","plant":"Momentum Dynamics","source":"https://vista.today/2019/09/momentum-dynamics-new-headquarters-in-malvern-an-rd-playground-for-worlds-best-engineers/","description":"","category":"Charging","city":"Malvern","state":"PA","lat":40.03622,"lng":-75.5138,"houseRep":"Chrissy Houlahan","houseParty":"D"},{"company":"Freeport-McMoRan","plant":"Morenci","source":"https://www.e-mj.com/features/expansion-program-propels-morenci-s-copper-production-to-world-class/","description":"","category":"Minerals","city":"Morenci","state":"AZ","lat":33.05406,"lng":-109.327,"houseRep":"Juan Ciscomani","houseParty":"R"},{"company":"MP Materials","plant":"Independent Magnet Production Facility","source":"https://mpmaterials.com/facilities/","description":"","category":"Minerals","city":"Fort Worth","state":"TX","lat":32.77142,"lng":-97.2915,"houseRep":"Marc Veasey","houseParty":"D"},{"company":"MP Materials","plant":"Mountain Pass Mine and Processing Facility","source":"https://mpmaterials.com/facilities/","description":"","category":"Minerals","city":"Mountain Pass","state":"CA","lat":34.83996,"lng":-115.967,"houseRep":"Jay Obernolte","houseParty":"R"},{"company":"New Flyer","plant":"New Flyer Manufacturing Facility","source":"https://www.newflyer.com/contact/reps-locations/facilities/","description":"","category":"OEM","city":"Jamestown","state":"NY","lat":42.097,"lng":-79.2353,"houseRep":"Nick Langworthy","houseParty":"R"},{"company":"New Flyer","plant":"New Flyer Manufacturing Facility","source":"https://www.newflyer.com/contact/reps-locations/facilities/","description":"","category":"OEM","city":"St. Cloud","state":"MN","lat":45.5579,"lng":-94.1632,"houseRep":"Tom Emmer","houseParty":"R"},{"company":"New Flyer","plant":"Vehicle Innovation Center (VIC)","source":"https://www.newflyer.com/contact/reps-locations/facilities/","description":"","category":"OEM","city":"Anniston","state":"AL","lat":33.6598,"lng":-85.8316,"houseRep":"Mike Rogers","houseParty":"R"},{"company":"NFI (ARBOC)","plant":"NFI (ARBOC)","source":"https://www.insideindianabusiness.com/articles/transport-van-company-plans-to-expand-in-elkhart-county","description":"","category":"OEM","city":"Middlebury","state":"IN","lat":41.6753,"lng":-85.7061,"houseRep":"Rudy Yakym","houseParty":"R"},{"company":"Novonix","plant":"Riverside Facility","source":"https://newschannel9.com/news/local/novonix-may-drop-182-acre-enterprise-south-expansion-to-build-along-the-bend-instead","description":"","category":"Minerals","city":"Chattanooga","state":"TN","lat":35.01782,"lng":-85.2064,"houseRep":"Chuck Fleischmann","houseParty":"R"},{"company":"NVH Korea","plant":"Locust Grove Facility","source":"https://valdostatoday.com/news-2/region/2023/06/electric-vehicle-parts-supplier-to-invest-in-new-ga-facility/","description":"","category":"Battery Production","city":"Locust Grove","state":"GA","lat":33.90734,"lng":-82.5099,"houseRep":"Rick Allen","houseParty":"R"},{"company":"Orbia Fluorinated Solutions (Koura)","plant":"St. Gabriel Plant","source":"","description":"","category":"Battery Production","city":"St. Gabriel","state":"LA","lat":30.2577,"lng":-91.0993,"houseRep":"Craig Washington","houseParty":"D"},{"company":"Our Next Energy","plant":"ONE Circle Gigafactory","source":"https://one.ai/news/onecircle","description":"","category":"Battery Production","city":"Van Buren Township","state":"MI","lat":42.28215,"lng":-86.3061,"houseRep":"Bill Huizenga","houseParty":"R"},{"company":"Panasonic","plant":"Kansas Factory","source":"https://www.kcur.org/news/2022-07-13/kansas-reportedly-landing-4-billion-factory-that-will-make-batteries-for-tesla","description":"","category":"Battery Production","city":"De Soto","state":"KS","lat":38.94616,"lng":-94.9714,"houseRep":"Sharice Davids","houseParty":"D"},{"company":"Phoenix","plant":"Phoenix Mine","source":"https://minerals.nv.gov/uploadedFiles/mineralsnvgov/content/Programs/Mining/MiningForms/MM2020_p032_text.pdf","description":"","category":"Minerals","city":"Battle Mountain","state":"NV","lat":40.04212,"lng":-116.975,"houseRep":"Mark Amodei","houseParty":"R"},{"company":"Elevara","plant":"Carolina Lithium","source":"https://www.elevra.com/about/","description":"","category":"Minerals","city":"Cherryville","state":"NC","lat":35.24292,"lng":-81.0373,"houseRep":"Jeff McDowell","houseParty":"R"},{"company":"Capstone Copper","plant":"Pinto Valley","source":"https://capstonecopper.com/operations/pinto-valley/","description":"","category":"Minerals","city":"Miami","state":"AZ","lat":33.39922,"lng":-110.869,"houseRep":"Eli Crane","houseParty":"R"},{"company":"PolyMet Northmet","plant":"PolyMet Northmet Mine","source":"https://www.dnr.state.mn.us/polymet/permitting/index.html","description":"","category":"Minerals","city":"Hoyt Lakes","state":"MN","lat":47.74231,"lng":-91.9535,"houseRep":"Pete Stauber","houseParty":"R"},{"company":"Princeton NuEnergy","plant":"Princeton NuEnergy","source":"https://www.prnewswire.com/news-releases/princeton-nuenergy-pne-and-wistron-greentech-announce-grand-opening-of-lithium-ion-battery-recycling-pilot-line-in-mckinney-texas-301658191.html","description":"","category":"Recycling","city":"Mckinney","state":"TX","lat":33.14144,"lng":-96.5883,"houseRep":"Van Taylor","houseParty":"R"},{"company":"Princeton NuEnergy","plant":"Princeton NuEnergy","source":"https://planetprinceton.com/2023/04/07/lithium-ion-battery-recycling-firm-founded-at-princeton-university-celebrates-research-partnership-at-bordentown-facility/","description":"","category":"Recycling","city":"Monmouth Junction","state":"NJ","lat":40.10154,"lng":-74.7247,"houseRep":"Herb Conaway","houseParty":"D"},{"company":"Princeton NuEnergy","plant":"Princeton NuEnergy","source":"https://www.sccommerce.com/news/princeton-nuenergy-selects-chester-county-first-south-carolina-operation","description":"","category":"Recycling","city":"Chester","state":"SC","lat":34.69329,"lng":-81.168,"houseRep":"Ralph Norman","houseParty":"R"},{"company":"Proterra","plant":"Powered 1","source":"https://www.proterra.com/press-release/proterra-sc-battery-factory/","description":"","category":"Battery Production","city":"Greer","state":"SC","lat":34.89825,"lng":-82.2579,"houseRep":"William Timmons","houseParty":"R"},{"company":"Proterra","plant":"Proterra Headquarters","source":"https://proterra.com/locations/","description":"","category":"OEM","city":"Burlingame","state":"CA","lat":37.56709,"lng":-122.368,"houseRep":"Kevin Mullin","houseParty":"D"},{"company":"Pumpkin Hollow","plant":"Pumpkin Hollow Copper Mine","source":"https://www.rgj.com/story/news/local/mason-valley/2019/11/14/nevada-copper-hiring-hundreds-pumpkin-hollow-mine/4196482002/","description":"","category":"Minerals","city":"Yerington","state":"NV","lat":39.08042,"lng":-119.229,"houseRep":"Mark Amodei","houseParty":"R"},{"company":"Qmerit","plant":"Qmerit Headquarters","source":"https://www.crunchbase.com/organization/qmerit","description":"","category":"Charging","city":"Irvine","state":"CA","lat":33.75725,"lng":-117.75,"houseRep":"Dave Min","houseParty":"D"},{"company":"Qmerit","plant":"Maryland Campus","source":"https://qmerit.com/news/qmerit-acquires-new-location-servicing-maryland-and-surrounding-areas","description":"","category":"Charging","city":"Lutherville-Timonium","state":"MD","lat":39.43321,"lng":-76.6546,"houseRep":"Dutch Ruppersberger","houseParty":"D"},{"company":"Quadrant","plant":"Neograss Campus","source":"https://louisvilleky.gov/news/quadrant-add-200-full-time-jobs-louisville-new-95-million-plus-magnet-manufacturing-facility","description":"","category":"Battery Production","city":"Louisville","state":"KY","lat":38.25247,"lng":-85.7538,"houseRep":"Morgan McGarvey","houseParty":"D"},{"company":"Quantum Scape","plant":"San Jose Campus","source":"https://www.businesswire.com/news/home/20211108005630/en/QuantumScape-Secures-Campus-in-San-Jose-California","description":"","category":"Battery Production","city":"San Jose","state":"CA","lat":37.34661,"lng":-121.91,"houseRep":"Zoe Lofgren","houseParty":"D"},{"company":"Redwood Materials","plant":"Storey County Plant","source":"https://techcrunch.com/2021/07/28/redwood-materials-raises-700m-to-expand-its-battery-recycling-operation/","description":"","category":"Recycling","city":"Sparks","state":"NV","lat":39.15306,"lng":-119.747,"houseRep":"Mark Amodei","houseParty":"R"},{"company":"Redwood Materials","plant":"Charleston Plant","source":"https://www.axios.com/2022/12/14/redwood-materials-south-carolina","description":"","category":"Battery Production","city":"Ridgeville","state":"SC","lat":32.78033,"lng":-79.9408,"houseRep":"James Clyburn","houseParty":"D"},{"company":"Resolution","plant":"Resolution Copper","source":"https://www.nsenergybusiness.com/projects/resolution-copper-project/#:~:text=RCM%20has%20invested%20more%20than,in%20the%20history%20of%20Arizona","description":"","category":"Minerals","city":"Superior","state":"AZ","lat":33.18058,"lng":-111.13,"houseRep":"Eli Crane","houseParty":"R"},{"company":"Rivian","plant":"Remanufacturing Facility","source":"https://ced.ky.gov/Newsroom/NewsPage/20230427_Rivian","description":"","category":"OEM","city":"Shephardsville","state":"KY","lat":37.98139,"lng":-85.700833,"houseRep":"Brett Guthrie","houseParty":"R"},{"company":"Rivian","plant":"Normal Plant","source":"https://www.chicagotribune.com/business/ct-biz-rivian-production-launch-ev-truck-manufacturer-20210915-mu4eanomhfgkdcnrklimc7kw2q-story.html","description":"Produces the R1S, R1T, EDV, and R2 vehicles","category":"OEM","city":"Normal","state":"IL","lat":40.52908,"lng":-88.9589,"houseRep":"Darin LaHood","houseParty":"R"},{"company":"Rivian","plant":"Stanton Springs Plant","source":"https://www.areadevelopment.com/newsitems/12-20-2021/rivian-stanton-springs-georgia.shtml","description":"Facility under development.","category":"OEM","city":"Social Circle","state":"GA","lat":32.3697,"lng":-81.3618,"houseRep":"Rick Allen","houseParty":"R"},{"company":"Robinson","plant":"Robinson Mine","source":"https://im-mining.com/2020/05/31/us-blm-seeks-public-views-kghm-robinson-copper-mine-expansion/","description":"","category":"Minerals","city":"Ruth","state":"NV","lat":39.27827,"lng":-114.989,"houseRep":"Mark Amodei","houseParty":"R"},{"company":"Schneider Electric","plant":"Schneider Electric","source":"https://www.prnewswire.com/news-releases/schneider-electric-plans-to-invest-over-700-million-in-the-us-supporting-energy--ai-sectors-and-job-growth-302409612.html","description":"","category":"Charging","city":"El Paso","state":"TX","lat":31.76361,"lng":-106.485,"houseRep":"Veronica Escobar","houseParty":"D"},{"company":"Scout Motors","plant":"Novi Design Facility","source":"https://www.scoutmotors.com/ourstory","description":"","category":"OEM","city":"Novi","state":"MI","lat":42.46896,"lng":-83.5222,"houseRep":"Debbie Dingell","houseParty":"D"},{"company":"Scout Motors","plant":"Blythewood Manufacturing Plant","source":"https://www.scoutmotors.com/ourstory","description":"Facility under development.","category":"OEM","city":"Blythewood","state":"SC","lat":34.21432,"lng":-80.974,"houseRep":"Joe Wilson","houseParty":"R"},{"company":"Siemens","plant":"Siemens","source":"https://new.siemens.com/us/en/company/siemens-in-the-usa/detroit.html","description":"","category":"Charging","city":"Detroit","state":"MI","lat":42.34702,"lng":-83.0602,"houseRep":"Shri Thanedar","houseParty":"D"},{"company":"Siemens","plant":"Siemens","source":"https://new.siemens.com/us/en/company/siemens-in-the-usa/los-angeles.html","description":"","category":"Charging","city":"Pamona","state":"CA","lat":33.97395,"lng":-118.248,"houseRep":"Robert Garcia","houseParty":"D"},{"company":"Siemens","plant":"Heliox HQ","source":"https://new.siemens.com/us/en/company/siemens-in-the-usa/atlanta.html","description":"","category":"Charging","city":"Atlanta","state":"GA","lat":33.84437,"lng":-84.4741,"houseRep":"Rich McCormick","houseParty":"R"},{"company":"Siemens","plant":"Siemens","source":"https://www.businesswire.com/news/home/20210824005116/en/Siemens-to-Expand-Electric-Vehicle-Charging-Manufacturing-in-the-United-States-to-Support-Rapid-Market-Growth","description":"","category":"Charging","city":"Lexington","state":"NC","lat":35.81132,"lng":-78.396,"houseRep":"Deborah Ross","houseParty":"D"},{"company":"Siemens","plant":"Heliox Manufacturing Center","source":"https://new.siemens.com/us/en/company/press/press-releases/usa/siemens-investing-54m-us-manufacturing-support.html","description":"","category":"Charging","city":"Albert Lea","state":"MN","lat":34.93403,"lng":-82.0107,"houseRep":"William Timmons","houseParty":"R"},{"company":"Siemens","plant":"Siemens","source":"https://new.siemens.com/us/en/company/press/press-releases/usa/siemens-investing-54m-us-manufacturing-support.html","description":"","category":"Charging","city":"Carrollton","state":"TX","lat":32.96247,"lng":-96.8982,"houseRep":"Beth Van Duyne","houseParty":"R"},{"company":"Sierrita","plant":"Sierrita","source":"https://miningdataonline.com/property/86/Sierrita-Mine.aspx","description":"","category":"Minerals","city":"Green Valley","state":"AZ","lat":31.83822,"lng":-110.955,"houseRep":"Juan Ciscomani","houseParty":"R"},{"company":"Sila Nanotechnologies","plant":"Sila Nanotechnologies","source":"https://www.silanano.com/press/press-releases/sila-opens-nations-first-automotive-scale-silicon-anode-plant-ushering-in-a-new-era-for-u-s-battery-manufacturing","description":"","category":"Battery Production","city":"Moses Lake","state":"WA","lat":47.1301,"lng":-119.278,"houseRep":"Dan Newhouse","houseParty":"R"},{"company":"Silver Bell","plant":"Marana Mine","source":"http://www.asarco.com/wp-content/uploads/Asarco-Factsheet-Silver-Bell-2014.pdf","description":"","category":"Minerals","city":"Marana","state":"AZ","lat":32.43674,"lng":-111.225,"houseRep":"Juan Ciscomani","houseParty":"R"},{"company":"SK Group","plant":"SK Battery America","source":"https://eng.sk.com/about/us-investment-map#state","description":"","category":"Battery Production","city":"Commerce","state":"GA","lat":34.21718,"lng":-83.4827,"houseRep":"Andrew Clyde","houseParty":"R"},{"company":"SK Group","plant":"SK Signet","source":"https://eng.sk.com/about/us-investment-map#state","description":"","category":"Charging","city":"Plano","state":"TX","lat":33.05676,"lng":-96.7308,"houseRep":"Pat Fallon","houseParty":"R"},{"company":"SolidEnergy Systems (SES) / GM","plant":"Woburn Plant","source":"https://techcrunch.com/2021/03/11/gm-partners-with-startup-solidenergy-systems-to-pack-more-energy-in-its-batteries/","description":"","category":"Battery Production","city":"Woburn","state":"MA","lat":42.4886,"lng":-71.1573,"houseRep":"Katherine Clark","houseParty":"D"},{"company":"Solvay","plant":"Solvay","source":"","description":"","category":"Battery Production","city":"Augusta","state":"GA","lat":33.4735,"lng":-82.0105,"houseRep":"Rick Allen","houseParty":"R"},{"company":"Sparkz","plant":"Sacramento Plant","source":"https://sparkz.energy/sparkz-announces-manufacturing-plant/","description":"","category":"Battery Production","city":"Sacramento","state":"CA","lat":38.68156177,"lng":-121.5624972,"houseRep":"Tom McClintock","houseParty":"R"},{"company":"Stardust Power","plant":"Stardust Power","source":"https://ktul.com/news/local/stardust-power-clears-final-regulatory-hurdle-for-muskogee-lithium-refinery","description":"","category":"Minerals","city":"Muskogee","state":"OK","lat":35.70582,"lng":-95.5003,"houseRep":"Tom Cole","houseParty":"R"},{"company":"Stellantis + Samsung SDI","plant":"StarPlus Energy","source":"https://subscriber.politicopro.com/article/2023/10/stellantis-to-build-second-ev-battery-joint-venture-in-indiana-00120969","description":"","category":"Battery Production","city":"Kokomo","state":"IN","lat":40.50685,"lng":-86.1711,"houseRep":"Victoria Spartz","houseParty":"R"},{"company":"Syrah Technologies","plant":"Vidalia Mineral Processing Plant","source":"https://www.reuters.com/business/autos-transportation/australias-syrah-tesla-extend-deadline-resolve-alleged-default-graphite-supply-2026-03-15/","description":"","category":"Minerals","city":"Vidalia","state":"LA","lat":31.56544,"lng":-91.426,"houseRep":"Julia Letlow","houseParty":"R"},{"company":"Talon (Twin Metals)","plant":"Twin Metals","source":"https://www.twin-metals.com/meet-twin-metals/about-the-project/","description":"","category":"Minerals","city":"Tamarack","state":"MN","lat":46.64439,"lng":-93.1272,"houseRep":"Pete Stauber","houseParty":"R"},{"company":"Talon Metals","plant":"Beulah Minerals Processing Center","source":"https://www.cramer.senate.gov/news/press-releases/sen-cramer-doe-awards-nearly-115-million-to-talon-metals-battery-mineral-processing-facility","description":"","category":"Minerals","city":"Mercer County","state":"ND","lat":47.30715,"lng":-101.833,"houseRep":"Julie Fedorchak","houseParty":"R"},{"company":"Tesla","plant":"Megafactory Lathrop","source":"https://www.tesla.com/megafactory","description":"","category":"Battery Production","city":"Lathrop","state":"CA","lat":37.81198,"lng":-121.287,"houseRep":"John Duarte","houseParty":"R"},{"company":"Tesla","plant":"Gigafactory Nevada","source":"https://www.bloomberg.com/news/articles/2024-01-31/tesla-to-open-new-us-battery-plant-with-equipment-from-catl","description":"Produces Tesla Semi","category":"Battery Production","city":"Sparks","state":"NV","lat":39.5404,"lng":-119.749,"houseRep":"Mark Amodei","houseParty":"R"},{"company":"Tesla","plant":"Gigafactory Austin","source":"https://www.cnbc.com/2023/01/10/tesla-plans-to-spend-more-than-770-million-on-texas-factory-expansion.html","description":"","category":"OEM","city":"Austin","state":"TX","lat":30.26834,"lng":-97.7414,"houseRep":"Lloyd Doggett","houseParty":"D"},{"company":"Tesla","plant":"Gigafactory New York","source":"https://buffalonews.com/business/local/how-tesla-built-its-buffalo-workforce-beyond-solar-to-dodge-a-big-state-penalty/article_07e4cfae-837e-11ec-ada5-3fc7b71005dd.html","description":"Produces Tesla Model Y and Cybertruck","category":"Charging","city":"Buffalo","state":"NY","lat":42.8864,"lng":-78.8784,"houseRep":"Tim Kennedy","houseParty":"D"},{"company":"Tesla","plant":"Brookshire Factory","source":"https://www.teslarati.com/tesla-200m-megapack-factory-texas-property-sale/","description":"","category":"Battery Production","city":"Brookshire","state":"TX","lat":29.7818369,"lng":-95.9333904,"houseRep":"Michael McCaul","houseParty":"R"},{"company":"Panasonic","plant":"Panasonic Energy of North America","source":"https://en.wikipedia.org/wiki/Gigafactory_Nevada","description":"","category":"OEM","city":"Sparks","state":"NV","lat":39.5404,"lng":-119.749,"houseRep":"Mark Amodei","houseParty":"R"},{"company":"Toyota","plant":"Toyota Kentucky","source":"https://pressroom.toyota.com/toyota-ramps-up-commitment-to-electrification-with-u-s-bev-production-and-additional-battery-plant-investment/","description":"","category":"OEM","city":"Georgetown","state":"KY","lat":38.23972,"lng":-84.5745,"houseRep":"Andy Barr","houseParty":"R"},{"company":"Toyota","plant":"Toyota Battery Manufacturing, North Carolina (TBMNC)","source":"https://insideclimatenews.org/news/01062024/toyota-north-carolina-ev-battery-megasite/.","description":"","category":"Battery Production","city":"Liberty","state":"NC","lat":36.06914,"lng":-79.7652,"houseRep":"Virginia Foxx","houseParty":"R"},{"company":"Toyota","plant":"Toyota Motor Manufacturing Indiana (TMMI)","source":"https://finance.yahoo.com/news/toyota-invest-1-4-billion-163813335.html","description":"","category":"OEM","city":"Princeton","state":"IN","lat":38.30337,"lng":-87.534,"houseRep":"Mark Messmer","houseParty":"R"},{"company":"Tritium","plant":"Lebanon Plant","source":"https://chargedevs.com/newswire/ev-charger-manufacturer-tritium-to-start-a-new-chapter-under-ceo-arcady-sosinov/","description":"","category":"Minerals","city":"Lebanon","state":"TN","lat":36.26727,"lng":-86.2912,"houseRep":"John Rose","houseParty":"R"},{"company":"Tyrone","plant":"Grant Plant","source":"https://www.fcx.com/sites/fcx/files/documents/fast_facts/new-mexico.pdf","description":"","category":"Minerals","city":"Tyrone","state":"NM","lat":32.7098,"lng":-108.302,"houseRep":"Gabe Vasquez","houseParty":"D"},{"company":"USA Rare Earths","plant":"Muskogee Lithium Refining Facility","source":"https://www.koco.com/article/oklahoma-kevin-stitt-investment-company/40239994","description":"","category":"Battery Production","city":"Stillwater","state":"OK","lat":36.1156,"lng":-97.0584,"houseRep":"Frank Lucas","houseParty":"R"},{"company":"Wallbox","plant":"Arlington Factory","source":"https://www.arlingtontx.gov/news/my_arlington_t_x/news_stories/invest_in_our_economy_03292022","description":"","category":"Charging","city":"Arlington","state":"TX","lat":32.63556,"lng":-97.1488,"houseRep":"Roger Williams","houseParty":"R"},{"company":"XOS Trucks","plant":"XOS Headquarteres","source":"https://www.linkedin.com/company/xostrucks","description":"","category":"OEM","city":"Los Angeles","state":"CA","lat":33.97395,"lng":-118.248,"houseRep":"Robert Garcia","houseParty":"D"}];
+
+// ── State ──────────────────────────────────────────────────────────────────
+let activeCategories = new Set(Object.keys(CATEGORIES));
+let chargingLoaded = false;
+let hoveredStateId = null;
+
+function getColor(cat){ return (CATEGORIES[cat]||{color:"#90a4ae"}).color; }
+function partyDot(p){ return `<span class="party-dot party-${p||'I'}"></span>`; }
+
+// ── Mapbox ─────────────────────────────────────────────────────────────────
+const map = new mapboxgl.Map({
+  container: 'map',
+  style: 'mapbox://styles/mapbox/light-v11',
+  center: [-96, 38.5],
+  zoom: 3.6,
+  minZoom: 2,
+  maxZoom: 14,
+  projection: 'mercator',
+  renderWorldCopies: false
+});
+
+map.addControl(new mapboxgl.NavigationControl({showCompass:false}), 'bottom-right');
+
+// ── Tooltip helpers ────────────────────────────────────────────────────────
+const tooltip = document.getElementById('tooltip');
+function showTip(e, props){
+  const d = props;
+  const c = getColor(d.category);
+  const sens = SENATORS[d.state] || [];
+  const senHtml = sens.map(s => `<div style="display:flex;align-items:center;gap:4px;margin-top:3px">${partyDot(s.party)}<span style="font-size:12px;color:#3a3530">${s.name}</span></div>`).join('');
+  const repHtml = d.houseRep ? `<div style="display:flex;align-items:center;gap:4px;margin-top:3px">${partyDot(d.houseParty)}<span style="font-size:12px;color:#3a3530">${d.houseRep}</span></div>` : '<span style="font-size:11px;color:#9a9288">Data unavailable</span>';
+
+  tooltip.innerHTML = `
+    <button class="tt-close" onclick="hideTip()">✕</button>
+    <div class="tt-co" style="padding-right:28px">${d.company}</div>
+    ${d.plant && d.plant !== d.company ? `<div class="tt-pl">${d.plant}</div>` : ''}
+    <span class="tt-cat" style="background:${c}18;color:${c};border:1px solid ${c}33">${d.category}</span>
+    ${d.description ? `<div class="tt-row"><span class="tt-label">Description</span><span class="tt-val" style="max-width:180px;word-break:break-word">${d.description}</span></div>` : ''}
+    <div class="tt-row"><span class="tt-label">Location</span><span class="tt-val">${d.city}, ${d.state}</span></div>
+    ${d.source ? `<div class="tt-row"><span class="tt-label">Source</span><span class="tt-val"><a href="${d.source}" target="_blank" style="color:#1565c0;text-decoration:none;font-size:11px">View source ↗</a></span></div>` : ''}
+    <div style="margin-top:8px;padding-top:8px;border-top:1px solid #f0ece6">
+      <div style="font-size:10px;font-family:'Roboto Mono',monospace;text-transform:uppercase;letter-spacing:.08em;color:#9a9288;margin-bottom:4px">House Rep</div>
+      ${repHtml}
+    </div>
+    <div style="margin-top:7px">
+      <div style="font-size:10px;font-family:'Roboto Mono',monospace;text-transform:uppercase;letter-spacing:.08em;color:#9a9288;margin-bottom:4px">Senators</div>
+      ${senHtml || '<span style="font-size:11px;color:#9a9288">—</span>'}
+    </div>
+  `;
+  tooltip.style.display = 'block';
+  // Position near the click point
+  const box = document.getElementById('map-container').getBoundingClientRect();
+  let x = e.originalEvent.clientX - box.left + 16;
+  let y = e.originalEvent.clientY - box.top + 16;
+  if(x + 380 > box.width)  x = e.originalEvent.clientX - box.left - 388;
+  if(y + 320 > box.height) y = e.originalEvent.clientY - box.top - 328;
+  tooltip.style.left = x + 'px';
+  tooltip.style.top  = y + 'px';
+}
+function hideTip(){ tooltip.style.display = 'none'; }
+
+// ── GeoJSON for facilities ─────────────────────────────────────────────────
+function buildFacilitiesGeoJSON(){
+  return {
+    type: 'FeatureCollection',
+    features: FACILITIES
+      .filter(d => activeCategories.has(d.category))
+      .map(d => ({
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [d.lng, d.lat] },
+        properties: d
+      }))
+  };
+}
+
+// ── After map loads ────────────────────────────────────────────────────────
+map.on('load', () => {
+
+  // Load us-atlas for state boundaries
+  fetch('https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json')
+    .then(r => r.json())
+    .then(us => {
+      const statesGeo = topojson.feature(us, us.objects.states);
+      // Attach party info to each feature
+      statesGeo.features = statesGeo.features.map(f => {
+        const fips = String(f.id).padStart(2,'0');
+        return { ...f, properties: { ...f.properties, fips, party: SENATE_PARTY[fips]||'X', name: FIPS_NAME[fips]||'', abbr: FIPS_ABBR[fips]||'' } };
+      });
+
+      map.addSource('states', { type:'geojson', data: statesGeo, generateId: true });
+
+      // Senate party fill (default hidden)
+      map.addLayer({
+        id: 'senate-fill',
+        type: 'fill',
+        source: 'states',
+        paint: {
+          'fill-color': ['match', ['get','party'], 'R','#e53935', 'D','#1e88e5', 'S','#9c27b0', 'transparent'],
+          'fill-opacity': 0.22
+        },
+        layout: { visibility: 'none' }
+      });
+
+      // State hover fill
+      map.addLayer({
+        id: 'state-hover-fill',
+        type: 'fill',
+        source: 'states',
+        paint: {
+          'fill-color': '#555',
+          'fill-opacity': ['case', ['boolean',['feature-state','hover'],false], 0.10, 0]
+        }
+      });
+
+      // State borders
+      map.addLayer({
+        id: 'state-borders',
+        type: 'line',
+        source: 'states',
+        paint: { 'line-color': '#b0a89e', 'line-width': 0.8 }
+      });
+
+
+      // ── Facilities layer ──
+      map.addSource('facilities', { type:'geojson', data: buildFacilitiesGeoJSON() });
+      map.addLayer({
+        id: 'facilities-layer',
+        type: 'circle',
+        source: 'facilities',
+        paint: {
+          'circle-radius': 7,
+          'circle-color': ['match',['get','category'],
+            'Battery Production','#1565c0',
+            'OEM','#2e7d32',
+            'Minerals','#e65100',
+            'Charging','#b21fc8',
+            'Recycling','#00838f',
+            'Supplier','#ad1457',
+            '#546e7a'
+          ],
+          'circle-opacity': 0.88,
+          'circle-stroke-width': 1.5,
+          'circle-stroke-color': '#fff',
+          'circle-stroke-opacity': 0.7
+        }
+      });
+
+      // ── Charging stations source placeholder ──
+      map.addSource('charging', { type:'geojson', data:{ type:'FeatureCollection', features:[] }});
+      map.addLayer({
+        id: 'charging-layer',
+        type: 'circle',
+        source: 'charging',
+        paint: {
+          'circle-radius': 4,
+          'circle-color': '#f9a825',
+          'circle-opacity': 0.75,
+          'circle-stroke-width': 1,
+          'circle-stroke-color': '#fff',
+          'circle-stroke-opacity': 0.6
+        },
+        layout: { visibility: 'none' }
+      });
+
+      // ── State hover (cursor + highlight) ──
+      map.on('mousemove', 'state-hover-fill', e => {
+        // Only show pointer if NOT hovering a facility dot
+        const facHit = map.queryRenderedFeatures(e.point, { layers: ['facilities-layer'] });
+        map.getCanvas().style.cursor = facHit.length ? 'pointer' : 'pointer';
+        if(hoveredStateId !== null) map.setFeatureState({source:'states',id:hoveredStateId},{hover:false});
+        hoveredStateId = e.features[0].id;
+        map.setFeatureState({source:'states',id:hoveredStateId},{hover:true});
+      });
+      map.on('mouseleave', 'state-hover-fill', () => {
+        map.getCanvas().style.cursor = '';
+        if(hoveredStateId !== null) map.setFeatureState({source:'states',id:hoveredStateId},{hover:false});
+        hoveredStateId = null;
+      });
+
+      // ── State click → state summary panel ──
+      map.on('click', 'state-hover-fill', e => {
+        // Skip if the user clicked directly on a facility dot
+        const facHit = map.queryRenderedFeatures(e.point, { layers: ['facilities-layer'] });
+        if(facHit.length > 0) return;
+        hideTip();
+        const props = e.features[0].properties;
+        showStatePanel(props.name, props.abbr);
+      });
+
+      // ── Facility cursor ──
+      map.on('mouseenter', 'facilities-layer', () => { map.getCanvas().style.cursor = 'pointer'; });
+      map.on('mouseleave', 'facilities-layer', () => { map.getCanvas().style.cursor = ''; });
+
+      // ── Facility click → popup ──
+      map.on('click', 'facilities-layer', e => {
+        document.getElementById('state-panel').style.display = 'none';
+        showTip(e, e.features[0].properties);
+      });
+
+      // ── Click on empty map → close popup ──
+      map.on('click', e => {
+        const facHit = map.queryRenderedFeatures(e.point, { layers: ['facilities-layer'] });
+        if(facHit.length === 0) hideTip();
+      });
+
+      updateStats();
+    });
+});
+
+// ── State panel ───────────────────────────────────────────────────────────
+document.getElementById('state-close').onclick = () => { document.getElementById('state-panel').style.display = 'none'; };
+document.getElementById('map').addEventListener('click', () => { document.getElementById('state-panel').style.display = 'none'; });
+
+// Build a state abbr → full name map
+const ABBR_NAME = {};
+Object.entries(FIPS_NAME).forEach(([f,n]) => { if(FIPS_ABBR[f]) ABBR_NAME[FIPS_ABBR[f]] = n; });
+
+function showStatePanel(stateName, stateAbbr){
+  // Resolve abbr and full name from whatever we receive
+  let abbr = (stateAbbr && stateAbbr.length <= 2) ? stateAbbr : '';
+  let name = (!abbr && stateName && stateName.length > 2) ? stateName : (ABBR_NAME[abbr] || '');
+  if(!abbr && stateName && stateName.length <= 2){ abbr = stateName; name = ABBR_NAME[abbr] || abbr; }
+  if(!name) name = abbr;
+
+  // Facilities in this state
+  const items = FACILITIES.filter(d => d.state === abbr);
+
+  // Group by category, preserving category order
+  const catOrder = Object.keys(CATEGORIES);
+  const bycat = {};
+  items.forEach(d => {
+    if(!bycat[d.category]) bycat[d.category] = [];
+    bycat[d.category].push(d);
+  });
+
+  // Build facility sections grouped by category
+  const catSections = catOrder
+    .filter(cat => bycat[cat])
+    .map(cat => {
+      const facs = bycat[cat];
+      const facilityRows = facs.map(f => {
+        const plantDiff = f.plant && f.plant !== f.company;
+        return `<div class="sp-facility-row">
+          <span class="sp-facility-name">${f.company}</span>
+          ${plantDiff ? `<span class="sp-facility-plant">${f.plant}</span>` : ''}
+          <span class="sp-facility-city">${f.city}</span>
+        </div>`;
+      }).join('');
+      return `<div class="sp-cat-section">
+        <div class="sp-cat-header">
+          <span class="sp-dot" style="background:${getColor(cat)}"></span>
+          <span class="sp-cat-label">${cat}</span>
+          <span class="sp-cat-count">${facs.length}</span>
+        </div>
+        ${facilityRows}
+      </div>`;
+    }).join('');
+
+  const noFacs = items.length === 0
+    ? `<div class="sp-no-facilities">No tracked facilities in this state</div>`
+    : '';
+
+  // Senators
+  const sens = SENATORS[abbr] || [];
+  const senRows = sens.length
+    ? sens.map(s => `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">${partyDot(s.party)}<span style="font-size:13px;color:#2a2520">${s.name}</span></div>`).join('')
+    : '<span style="font-size:12px;color:#9a9288">—</span>';
+
+  document.getElementById('sp-title').textContent = name;
+  document.getElementById('sp-subtitle').textContent =
+    items.length ? `${items.length} facilit${items.length === 1 ? 'y' : 'ies'} tracked` : 'No tracked facilities';
+  document.getElementById('sp-body').innerHTML =
+    catSections + noFacs +
+    `<div class="sp-senators">
+       <div class="sp-senators-label">Senators — 119th Congress</div>
+       ${senRows}
+     </div>`;
+  document.getElementById('state-panel').style.display = 'flex';
+}
+
+// ── Filter checkboxes ──────────────────────────────────────────────────────
+const filterDiv = document.getElementById('filters');
+const catCounts = {};
+FACILITIES.forEach(d => { catCounts[d.category] = (catCounts[d.category]||0)+1; });
+
+Object.entries(CATEGORIES).forEach(([key, val]) => {
+  const item = document.createElement('div');
+  item.className = 'filter-item';
+  item.innerHTML = `
+    <div class="filter-check checked" style="background:${val.color}"></div>
+    <span class="filter-dot" style="background:${val.color}"></span>
+    <span class="filter-label">${key}</span>
+    <span class="filter-count">${catCounts[key]||0}</span>
+  `;
+  item.onclick = () => {
+    const check = item.querySelector('.filter-check');
+    if(activeCategories.has(key)){
+      activeCategories.delete(key);
+      check.classList.remove('checked');
+      check.style.background = '#fff';
+    } else {
+      activeCategories.add(key);
+      check.classList.add('checked');
+      check.style.background = val.color;
+    }
+    if(map.getSource('facilities')) map.getSource('facilities').setData(buildFacilitiesGeoJSON());
+    updateStats();
+  };
+  filterDiv.appendChild(item);
+});
+
+// ── Stats ──────────────────────────────────────────────────────────────────
+function updateStats(){
+  const vis = FACILITIES.filter(d => activeCategories.has(d.category));
+  document.getElementById('s-total').textContent = vis.length;
+  document.getElementById('s-cats').textContent = new Set(vis.map(d=>d.category)).size;
+}
+updateStats();
+
+// ── Layer toggles ──────────────────────────────────────────────────────────
+function setupToggle(btnId, trackId, layerId, onEnable){
+  const btn = document.getElementById(btnId);
+  const track = document.getElementById(trackId);
+  let on = false;
+  btn.addEventListener('click', async () => {
+    if(onEnable && !on) await onEnable();
+    on = !on;
+    track.classList.toggle('on', on);
+    if(map.getLayer(layerId)){
+      map.setLayoutProperty(layerId, 'visibility', on ? 'visible' : 'none');
+    }
+  });
+}
+
+setupToggle('lt-senate','tt-senate','senate-fill', null);
+setupToggle('lt-charging','tt-charging','charging-layer', loadChargingStations);
+
+// ── IndexedDB helpers ──────────────────────────────────────────────────────
+const IDB_NAME = 'ev-supply-chain', IDB_STORE = 'charging', IDB_KEY = 'stations';
+const IDB_MAX_AGE_DAYS = 30;
+
+function idbOpen(){
+  return new Promise((res, rej) => {
+    const req = indexedDB.open(IDB_NAME, 1);
+    req.onupgradeneeded = e => e.target.result.createObjectStore(IDB_STORE);
+    req.onsuccess = e => res(e.target.result);
+    req.onerror   = e => rej(e.target.error);
+  });
+}
+async function idbGet(db){ return new Promise((res,rej) => { const r = db.transaction(IDB_STORE).objectStore(IDB_STORE).get(IDB_KEY); r.onsuccess=e=>res(e.target.result); r.onerror=e=>rej(e.target.error); }); }
+async function idbPut(db, val){ return new Promise((res,rej) => { const r = db.transaction(IDB_STORE,'readwrite').objectStore(IDB_STORE).put(val, IDB_KEY); r.onsuccess=()=>res(); r.onerror=e=>rej(e.target.error); }); }
+
+// ── NREL full download (paginated, runs in browser) ────────────────────────
+const NREL_KEY    = '9sEHgWP4SSmHoLQTLmvpXRgmCftgDsGmeEMdFOLA';
+const NREL_FIELDS = 'station_name,city,state,ev_network,ev_level2_evse_num,ev_dc_fast_num,latitude,longitude';
+const NREL_BASE   = `https://developer.nrel.gov/api/alt-fuel-stations/v1.json?api_key=${NREL_KEY}&fuel_type=ELEC&status=E&country=US&fields=${NREL_FIELDS}`;
+
+function setLoaderText(t){ document.getElementById('charging-loader').textContent = t; }
+
+async function fetchAllStations(){
+  // Get total
+  const first = await fetch(`${NREL_BASE}&limit=1`).then(r=>r.json());
+  const total = first.total_results;
+  const BATCH = 500;
+  const batches = Math.ceil(total / BATCH);
+  setLoaderText(`Downloading stations 0 / ${total.toLocaleString()}…`);
+
+  // Fetch all batches in parallel groups of 5
+  let all = [];
+  for(let g = 0; g < batches; g += 5){
+    const group = [];
+    for(let b = g; b < Math.min(g+5, batches); b++){
+      group.push(fetch(`${NREL_BASE}&limit=${BATCH}&offset=${b*BATCH}`).then(r=>r.json()).then(d=>d.alt_fuel_stations||[]));
+    }
+    const results = await Promise.all(group);
+    results.forEach(r => all.push(...r));
+    setLoaderText(`Downloading… ${all.length.toLocaleString()} / ${total.toLocaleString()}`);
+  }
+
+  // Slim down to only needed fields
+  return all
+    .filter(s => s.latitude && s.longitude)
+    .map(s => ({
+      n:   s.station_name || '',
+      c:   s.city         || '',
+      s:   s.state        || '',
+      nw:  s.ev_network   || '',
+      l2:  s.ev_level2_evse_num || 0,
+      dc:  s.ev_dc_fast_num     || 0,
+      lat: s.latitude,
+      lng: s.longitude,
+    }));
+}
+
+// ── Build GeoJSON from slim station array ──────────────────────────────────
+function stationsToGeoJSON(stations){
+  return {
+    type: 'FeatureCollection',
+    features: stations.map(s => ({
+      type: 'Feature',
+      geometry: { type: 'Point', coordinates: [s.lng, s.lat] },
+      properties: { name: s.n, city: s.c, state: s.s, network: s.nw||'Unknown', level2: s.l2||0, dcFast: s.dc||0 }
+    }))
+  };
+}
+
+// ── Load charging stations (IndexedDB cache → NREL API fallback) ───────────
+async function loadChargingStations(){
+  if(chargingLoaded) return;
+  const loader = document.getElementById('charging-loader');
+  loader.style.display = 'block';
+  try {
+    let stations;
+
+    // 1. Try IndexedDB cache
+    try {
+      const db      = await idbOpen();
+      const cached  = await idbGet(db);
+      const ageOk   = cached && ((Date.now() - cached.ts) < IDB_MAX_AGE_DAYS * 86400000);
+      if(ageOk && cached.data && cached.data.length){
+        stations = cached.data;
+        setLoaderText(`Loading ${stations.length.toLocaleString()} cached stations…`);
+        console.log(`Charging: ${stations.length} stations from IndexedDB cache`);
+      }
+    } catch(e){ console.warn('IndexedDB read failed:', e); }
+
+    // 2. Download from NREL if not cached
+    if(!stations){
+      setLoaderText('Connecting to NREL…');
+      stations = await fetchAllStations();
+      console.log(`Charging: downloaded ${stations.length} stations from NREL`);
+      // Save to IndexedDB for next time
+      try {
+        const db = await idbOpen();
+        await idbPut(db, { data: stations, ts: Date.now() });
+        console.log('Charging: saved to IndexedDB cache');
+      } catch(e){ console.warn('IndexedDB write failed:', e); }
+    }
+
+    map.getSource('charging').setData(stationsToGeoJSON(stations));
+
+    // Wire up charging tooltip (click-based like facility dots)
+    map.on('mouseenter', 'charging-layer', () => { map.getCanvas().style.cursor = 'pointer'; });
+    map.on('mouseleave', 'charging-layer', () => { map.getCanvas().style.cursor = ''; hideTip(); });
+    map.on('click', 'charging-layer', ev => {
+      const p = ev.features[0].properties;
+      tooltip.innerHTML = `
+        <button class="tt-close" onclick="hideTip()">&#x2715;</button>
+        <div class="tt-co" style="font-size:14px;padding-right:28px">${p.name||'EV Charging Station'}</div>
+        <div class="tt-pl">${p.city}, ${p.state}</div>
+        <span class="tt-cat" style="background:#f9a82518;color:#f57f17;border:1px solid #f9a82533">Charging Station</span>
+        <div class="tt-row"><span class="tt-label">Network</span><span class="tt-val">${p.network}</span></div>
+        ${p.dcFast  ? `<div class="tt-row"><span class="tt-label">DC Fast</span><span class="tt-val">${p.dcFast} port${p.dcFast>1?'s':''}</span></div>` : ''}
+        ${p.level2  ? `<div class="tt-row"><span class="tt-label">Level 2</span><span class="tt-val">${p.level2} port${p.level2>1?'s':''}</span></div>` : ''}
+      `;
+      const box = document.getElementById('map-container').getBoundingClientRect();
+      let x = ev.originalEvent.clientX - box.left + 16;
+      let y = ev.originalEvent.clientY - box.top  + 16;
+      if(x + 340 > box.width)  x = ev.originalEvent.clientX - box.left - 348;
+      if(y + 180 > box.height) y = ev.originalEvent.clientY - box.top  - 188;
+      tooltip.style.left = x + 'px'; tooltip.style.top = y + 'px';
+      tooltip.style.display = 'block';
+    });
+
+    chargingLoaded = true;
+  } catch(err){
+    console.error('Charging load failed:', err);
+    setLoaderText('Failed to load — check console');
+    setTimeout(() => { loader.style.display = 'none'; }, 3000);
+    return;
+  }
+  loader.style.display = 'none';
+}
+
+// ── Sidebar toggle ─────────────────────────────────────────────────────────
+const bodyEl = document.getElementById('body');
+document.getElementById('sidebar-toggle').addEventListener('click', () => {
+  bodyEl.classList.toggle('collapsed');
+  document.querySelector('.toggle-arrow').textContent = bodyEl.classList.contains('collapsed') ? '▶' : '◀';
+  setTimeout(() => map.resize(), 260);
+});
+
+// ── Help ───────────────────────────────────────────────────────────────────
+function openHelp(){ document.getElementById('help-panel').style.display='block'; document.getElementById('help-overlay').style.display='block'; }
+function closeHelp(){ document.getElementById('help-panel').style.display='none'; document.getElementById('help-overlay').style.display='none'; }
+document.getElementById('help-link').addEventListener('click', openHelp);
+document.getElementById('help-close').addEventListener('click', closeHelp);
+document.getElementById('help-overlay').addEventListener('click', closeHelp);
+</script>
+</body>
+</html>
